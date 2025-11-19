@@ -33,7 +33,10 @@ export function DrawerContent(props: any) {
         </TouchableOpacity>
 
         <Text style={styles.sectionTitle}>ADMINISTRACIÓN</Text>
-        <TouchableOpacity style={styles.menuItem}>
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => props.navigation.navigate('Users')}
+        >
           <Text style={styles.menuItemText}>Usuarios</Text>
         </TouchableOpacity>
       </View>

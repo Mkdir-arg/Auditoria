@@ -16,6 +16,7 @@ export function LoginPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    console.log('Form submitted with credentials:', credentials)
     login(credentials)
   }
 

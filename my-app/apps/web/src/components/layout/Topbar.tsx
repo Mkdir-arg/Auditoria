@@ -11,17 +11,20 @@ export function Topbar() {
         
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-              <span className="text-white text-sm font-medium">
+            <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
+              <span className="text-white text-sm font-bold">
                 {user?.first_name?.[0] || user?.username?.[0] || 'U'}
               </span>
             </div>
-            <span className="text-sm text-gray-700">
-              {user?.first_name || user?.username || 'Usuario'}
-            </span>
+            <div>
+              <div className="text-sm font-medium text-gray-900">
+                {user?.first_name || user?.username || 'Usuario'}
+              </div>
+              <div className="text-xs text-gray-500">Administrador</div>
+            </div>
           </div>
           
-          <Button variant="ghost" onClick={logout}>
+          <Button variant="ghost" onClick={logout} className="hover:bg-red-50 hover:text-red-600">
             Cerrar sesión
           </Button>
         </div>

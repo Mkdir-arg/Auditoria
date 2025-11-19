@@ -1,6 +1,7 @@
 import React from 'react'
 import { createDrawerNavigator } from '@react-navigation/drawer'
 import { HomeScreen } from '../screens/HomeScreen'
+import { UsersScreen } from '../screens/UsersScreen'
 import { DrawerContent } from '../components/layout/DrawerContent'
 
 const Drawer = createDrawerNavigator()
@@ -23,6 +24,11 @@ export function AppDrawer() {
         name="Home" 
         component={HomeScreen}
         options={{ title: 'Panel' }}
+      />
+      <Drawer.Screen 
+        name="Users" 
+        component={UsersScreen}
+        options={{ title: 'Usuarios' }}
       />
     </Drawer.Navigator>
   )

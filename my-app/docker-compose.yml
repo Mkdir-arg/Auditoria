@@ -12,14 +12,22 @@ services:
       - mysql_data:/var/lib/mysql
       - ./docker/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
-      - "3307:3306"
+      - "3308:3306"
     networks:
       - app-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
 
   backend:
     build: ./backend
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     environment:
       DB_NAME: ${DB_NAME}
       DB_USER: ${DB_USER}
@@ -34,16 +42,24 @@ services:
       - "8000:8000"
     networks:
       - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
 
   web:
     build: ./apps/web
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     volumes:
       - ./apps/web:/app
       - /app/node_modules
     ports:
-      - "3001:3000"
+      - "3001:3001"
     networks:
       - app-network
 

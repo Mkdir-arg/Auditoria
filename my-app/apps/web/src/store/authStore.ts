@@ -25,6 +25,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   isAuthenticated: !!localStorage.getItem('access_token'),
   
   login: (tokens, user) => {
+    console.log('Login called with:', { tokens, user })
     localStorage.setItem('access_token', tokens.access)
     localStorage.setItem('refresh_token', tokens.refresh)
     set({
@@ -33,6 +34,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       refreshToken: tokens.refresh,
       isAuthenticated: true,
     })
+    console.log('Auth state updated, isAuthenticated:', true)
   },
   
   logout: () => {
