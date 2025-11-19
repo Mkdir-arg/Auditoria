@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { HomeIcon, UsersIcon, Bars3Icon, XMarkIcon, ChartBarIcon, DocumentTextIcon, CogIcon } from '@heroicons/react/24/outline'
+import { HomeIcon, UsersIcon, Bars3Icon, XMarkIcon, ChartBarIcon, DocumentTextIcon, CogIcon, BuildingOfficeIcon, ClipboardDocumentCheckIcon } from '@heroicons/react/24/outline'
 
 interface SidebarProps {
   isCollapsed: boolean
@@ -14,9 +14,16 @@ export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
       { name: 'Inicio', icon: HomeIcon, href: '/home', color: 'text-blue-400' },
       { name: 'Dashboard', icon: ChartBarIcon, href: '/dashboard', color: 'text-green-400' }
     ]},
+    { section: 'AUDITORÍA', items: [
+      { name: 'Instituciones', icon: BuildingOfficeIcon, href: '/instituciones', color: 'text-cyan-400' },
+      { name: 'Visitas', icon: ClipboardDocumentCheckIcon, href: '/visitas', color: 'text-emerald-400' }
+    ]},
+    { section: 'REPORTES', items: [
+      { name: 'Ranking', icon: DocumentTextIcon, href: '/reportes/ranking', color: 'text-orange-400' },
+      { name: 'Por Institución', icon: ChartBarIcon, href: '/reportes/instituciones', color: 'text-yellow-400' }
+    ]},
     { section: 'ADMINISTRACIÓN', items: [
       { name: 'Usuarios', icon: UsersIcon, href: '/users', color: 'text-purple-400' },
-      { name: 'Reportes', icon: DocumentTextIcon, href: '/reports', color: 'text-orange-400' },
       { name: 'Configuración', icon: CogIcon, href: '/settings', color: 'text-gray-400' }
     ]}
   ]

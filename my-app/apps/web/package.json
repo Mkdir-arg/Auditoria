@@ -15,7 +15,8 @@
     "@tanstack/react-query": "^5.0.0",
     "axios": "^1.6.0",
     "zustand": "^4.4.0",
-    "@heroicons/react": "^2.0.0"
+    "@heroicons/react": "^2.0.0",
+    "use-debounce": "^10.0.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.0",

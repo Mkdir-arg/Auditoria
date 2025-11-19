@@ -21,7 +21,10 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'corsheaders',
+    'django_filters',
     'core',
+    'nutricion',
+    'auditoria',
 ]
 
 MIDDLEWARE = [
@@ -68,7 +71,7 @@ DATABASES = {
             'charset': 'utf8mb4',
             'autocommit': True,
         },
-        'CONN_MAX_AGE': 0,
+        'CONN_MAX_AGE': 600,  # 10 minutos - Persistent connections
     }
 }
 
@@ -102,6 +105,14 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle'
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '100/hour',
+        'user': '1000/hour'
+    }
 }
 
 from datetime import timedelta
@@ -113,3 +124,14 @@ SIMPLE_JWT = {
 }
 
 CORS_ALLOW_ALL_ORIGINS = True
+
+# Cache Configuration
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
+        'OPTIONS': {
+            'MAX_ENTRIES': 1000
+        }
+    }
+}
