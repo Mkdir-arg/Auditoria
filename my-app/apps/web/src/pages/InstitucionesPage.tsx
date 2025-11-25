@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
-import { PlusIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline'
+import { useNavigate } from 'react-router-dom'
+import { PlusIcon, PencilIcon, TrashIcon, EyeIcon } from '@heroicons/react/24/outline'
 import { auditoriaService, Institucion } from '../services/auditoriaService'
 import { Modal } from '../components/ui/Modal'
 import { Button } from '../components/ui/Button'
@@ -8,6 +9,7 @@ import { Select } from '../components/ui/Select'
 import { Card } from '../components/ui/Card'
 
 export const InstitucionesPage: React.FC = () => {
+  const navigate = useNavigate()
   const [instituciones, setInstituciones] = useState<Institucion[]>([])
   const [loading, setLoading] = useState(true)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -93,71 +95,157 @@ export const InstitucionesPage: React.FC = () => {
     { value: 'otro', label: 'Otro' },
   ]
 
+  const getTipoIcon = (tipo: string) => {
+    const icons: Record<string, string> = {
+      escuela: '🏫',
+      cdi: '🏬',
+      hogar: '🏠',
+      geriatrico: '🏛️',
+      otro: '🏭'
+    }
+    return icons[tipo] || '🏭'
+  }
+
+  const getTipoColor = (tipo: string) => {
+    const colors: Record<string, string> = {
+      escuela: 'from-blue-500 to-cyan-500',
+      cdi: 'from-purple-500 to-pink-500',
+      hogar: 'from-green-500 to-emerald-500',
+      geriatrico: 'from-orange-500 to-amber-500',
+      otro: 'from-gray-500 to-slate-500'
+    }
+    return colors[tipo] || 'from-gray-500 to-slate-500'
+  }
+
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Instituciones</h1>
-        <Button
-          onClick={() => {
-            resetForm()
-            setIsModalOpen(true)
-          }}
-        >
-          <PlusIcon className="w-5 h-5 mr-2" />
-          Nueva Institución
-        </Button>
+    <div className="p-6 space-y-6">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-8 text-white shadow-xl">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-4xl font-bold mb-2">🏫 Instituciones</h1>
+            <p className="text-indigo-100 text-lg">{instituciones.length} instituciones registradas</p>
+          </div>
+          <button
+            onClick={() => {
+              resetForm()
+              setIsModalOpen(true)
+            }}
+            className="bg-white text-indigo-600 hover:bg-indigo-50 shadow-lg px-6 py-3 text-lg font-semibold rounded-lg flex items-center gap-2 transition-colors"
+          >
+            <PlusIcon className="w-6 h-6" />
+            Nueva Institución
+          </button>
+        </div>
       </div>
 
-      <div className="mb-4">
-        <Input
-          placeholder="Buscar instituciones..."
+      {/* Buscador */}
+      <div className="relative">
+        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+          <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </div>
+        <input
+          type="text"
+          placeholder="Buscar por nombre, código, barrio..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full pl-12 pr-4 py-4 text-lg border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:outline-none shadow-sm"
         />
       </div>
 
       {loading ? (
-        <p>Cargando...</p>
+        <div className="text-center py-12">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+          <p className="mt-4 text-gray-600">Cargando instituciones...</p>
+        </div>
+      ) : instituciones.length === 0 ? (
+        <div className="text-center py-12 bg-gray-50 rounded-xl">
+          <div className="text-6xl mb-4">📁</div>
+          <p className="text-gray-500 text-lg">No se encontraron instituciones</p>
+        </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {instituciones.map((inst) => (
-            <Card key={inst.id}>
-              <div className="flex justify-between items-start mb-2">
-                <div>
-                  <h3 className="font-semibold text-lg">{inst.nombre}</h3>
-                  <p className="text-sm text-gray-600">{inst.codigo}</p>
-                </div>
-                <div className="flex gap-2">
-                  <button onClick={() => handleEdit(inst)} className="text-blue-600 hover:text-blue-800">
-                    <PencilIcon className="w-5 h-5" />
-                  </button>
-                  <button onClick={() => handleDelete(inst.id)} className="text-red-600 hover:text-red-800">
-                    <TrashIcon className="w-5 h-5" />
-                  </button>
+            <div
+              key={inst.id}
+              className="group relative bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 hover:scale-105"
+            >
+              {/* Header con gradiente */}
+              <div className={`bg-gradient-to-r ${getTipoColor(inst.tipo)} p-6 text-white`}>
+                <div className="flex justify-between items-start">
+                  <div className="flex items-center gap-3">
+                    <span className="text-4xl">{getTipoIcon(inst.tipo)}</span>
+                    <div>
+                      <span className="text-xs font-semibold uppercase tracking-wider opacity-90">{inst.tipo}</span>
+                      <h3 className="text-xl font-bold mt-1">{inst.nombre}</h3>
+                    </div>
+                  </div>
+                  <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                    inst.activo ? 'bg-green-400 text-green-900' : 'bg-gray-400 text-gray-900'
+                  }`}>
+                    {inst.activo ? '✓ Activa' : '✕ Inactiva'}
+                  </span>
                 </div>
               </div>
-              <p className="text-sm text-gray-700 mb-1">
-                <span className="font-medium">Tipo:</span> {inst.tipo}
-              </p>
-              {inst.direccion && (
-                <p className="text-sm text-gray-700 mb-1">{inst.direccion}</p>
-              )}
-              {inst.barrio && (
-                <p className="text-sm text-gray-700">
-                  <span className="font-medium">Barrio:</span> {inst.barrio}
-                </p>
-              )}
-              {inst.comuna && (
-                <p className="text-sm text-gray-700">
-                  <span className="font-medium">Comuna:</span> {inst.comuna}
-                </p>
-              )}
-              <div className="mt-2">
-                <span className={`text-xs px-2 py-1 rounded ${inst.activo ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                  {inst.activo ? 'Activa' : 'Inactiva'}
-                </span>
+
+              {/* Contenido */}
+              <div className="p-6 space-y-3">
+                <div className="flex items-center gap-2 text-gray-600">
+                  <svg className="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
+                  </svg>
+                  <span className="font-mono text-sm font-semibold">{inst.codigo}</span>
+                </div>
+
+                {inst.direccion && (
+                  <div className="flex items-start gap-2 text-gray-600">
+                    <svg className="w-5 h-5 text-indigo-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span className="text-sm">{inst.direccion}</span>
+                  </div>
+                )}
+
+                <div className="flex gap-2 flex-wrap">
+                  {inst.barrio && (
+                    <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-medium">
+                      🏘️ {inst.barrio}
+                    </span>
+                  )}
+                  {inst.comuna && (
+                    <span className="px-3 py-1 bg-purple-50 text-purple-700 rounded-full text-xs font-medium">
+                      🗺️ Comuna {inst.comuna}
+                    </span>
+                  )}
+                </div>
               </div>
-            </Card>
+
+              {/* Acciones */}
+              <div className="px-6 pb-6 flex gap-2">
+                <button
+                  onClick={() => navigate(`/instituciones/${inst.id}`)}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all font-medium shadow-md hover:shadow-lg"
+                >
+                  <EyeIcon className="w-4 h-4" />
+                  Ver Detalle
+                </button>
+                <button
+                  onClick={() => handleEdit(inst)}
+                  className="px-4 py-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-colors font-medium"
+                >
+                  <PencilIcon className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => handleDelete(inst.id)}
+                  className="px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors font-medium"
+                >
+                  <TrashIcon className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
           ))}
         </div>
       )}

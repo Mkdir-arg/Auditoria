@@ -1,4 +1,5 @@
 import apiClient from './apiClient'
+import { createReportesService } from '../../../shared/services/reportesService'
 
 export interface DashboardStats {
   total_instituciones: number
@@ -40,6 +41,8 @@ export interface RankingInstitucion {
   institucion__tipo: string
   total_visitas: number
 }
+
+const sharedReportesService = createReportesService(apiClient)
 
 export const reportesService = {
   async getDashboardStats() {

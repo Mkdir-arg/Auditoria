@@ -60,41 +60,107 @@ export const VisitasPage: React.FC = () => {
     { value: 'vianda', label: 'Vianda' },
   ]
 
+  const getTipoComidaIcon = (tipo: string) => {
+    const icons: Record<string, string> = {
+      desayuno: '☕',
+      almuerzo: '🍽️',
+      merienda: '🧁',
+      cena: '🌙',
+      vianda: '🥡'
+    }
+    return icons[tipo] || '🍴'
+  }
+
+  const getTipoComidaColor = (tipo: string) => {
+    const colors: Record<string, string> = {
+      desayuno: 'from-yellow-500 to-orange-500',
+      almuerzo: 'from-red-500 to-pink-500',
+      merienda: 'from-purple-500 to-pink-500',
+      cena: 'from-indigo-500 to-blue-500',
+      vianda: 'from-green-500 to-teal-500'
+    }
+    return colors[tipo] || 'from-gray-500 to-slate-500'
+  }
+
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Visitas de Auditoría</h1>
-        <Button onClick={() => setIsModalOpen(true)}>
-          <PlusIcon className="w-5 h-5 mr-2" />
-          Nueva Visita
-        </Button>
+    <div className="p-6 space-y-6">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl p-8 text-white shadow-xl">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-4xl font-bold mb-2">📋 Visitas de Auditoría</h1>
+            <p className="text-emerald-100 text-lg">{visitas.length} visitas registradas</p>
+          </div>
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="bg-white text-emerald-600 hover:bg-emerald-50 shadow-lg px-6 py-3 text-lg font-semibold rounded-lg flex items-center gap-2 transition-colors"
+          >
+            <PlusIcon className="w-6 h-6" />
+            Nueva Visita
+          </button>
+        </div>
       </div>
 
       {loading ? (
-        <p>Cargando...</p>
+        <div className="text-center py-12">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
+          <p className="mt-4 text-gray-600">Cargando visitas...</p>
+        </div>
+      ) : visitas.length === 0 ? (
+        <div className="text-center py-12 bg-gray-50 rounded-xl">
+          <div className="text-6xl mb-4">📁</div>
+          <p className="text-gray-500 text-lg">No se encontraron visitas</p>
+        </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {visitas.map((visita) => (
-            <Card key={visita.id}>
-              <div className="flex justify-between items-start mb-2">
-                <div>
-                  <h3 className="font-semibold text-lg">{visita.institucion_nombre}</h3>
-                  <p className="text-sm text-gray-600">{visita.fecha}</p>
+            <div
+              key={visita.id}
+              className="group relative bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 hover:scale-105"
+            >
+              {/* Header con gradiente */}
+              <div className={`bg-gradient-to-r ${getTipoComidaColor(visita.tipo_comida)} p-6 text-white`}>
+                <div className="flex justify-between items-start">
+                  <div className="flex items-center gap-3">
+                    <span className="text-4xl">{getTipoComidaIcon(visita.tipo_comida)}</span>
+                    <div>
+                      <span className="text-xs font-semibold uppercase tracking-wider opacity-90">{visita.tipo_comida}</span>
+                      <h3 className="text-xl font-bold mt-1">{visita.institucion_nombre}</h3>
+                    </div>
+                  </div>
                 </div>
+              </div>
+
+              {/* Contenido */}
+              <div className="p-6 space-y-3">
+                <div className="flex items-center gap-2 text-gray-600">
+                  <svg className="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <span className="font-semibold text-sm">{new Date(visita.fecha).toLocaleDateString('es-AR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                </div>
+
+                {visita.observaciones && (
+                  <div className="flex items-start gap-2 text-gray-600">
+                    <svg className="w-5 h-5 text-emerald-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                    </svg>
+                    <span className="text-sm italic">{visita.observaciones}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Acciones */}
+              <div className="px-6 pb-6">
                 <button
                   onClick={() => navigate(`/visitas/${visita.id}`)}
-                  className="text-blue-600 hover:text-blue-800"
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg hover:from-emerald-700 hover:to-teal-700 transition-all font-medium shadow-md hover:shadow-lg"
                 >
                   <EyeIcon className="w-5 h-5" />
+                  Ver Detalle y Platos
                 </button>
               </div>
-              <p className="text-sm text-gray-700 mb-2">
-                <span className="font-medium">Tipo:</span> {visita.tipo_comida}
-              </p>
-              {visita.observaciones && (
-                <p className="text-sm text-gray-600 italic">{visita.observaciones}</p>
-              )}
-            </Card>
+            </div>
           ))}
         </div>
       )}

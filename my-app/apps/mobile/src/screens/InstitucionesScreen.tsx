@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { View, Text, FlatList, TouchableOpacity, TextInput, StyleSheet, Alert } from 'react-native'
 import { auditoriaService, Institucion } from '../services/auditoriaService'
 
-export const InstitucionesScreen = () => {
+export const InstitucionesScreen = ({ navigation }: any) => {
   const [instituciones, setInstituciones] = useState<Institucion[]>([])
   const [search, setSearch] = useState('')
 
@@ -31,12 +31,16 @@ export const InstitucionesScreen = () => {
         data={instituciones}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
-          <View style={styles.card}>
+          <TouchableOpacity 
+            style={styles.card}
+            onPress={() => navigation.navigate('InstitucionDetalle', { id: item.id })}
+          >
             <Text style={styles.title}>{item.nombre}</Text>
             <Text style={styles.subtitle}>{item.codigo} - {item.tipo}</Text>
             {item.direccion && <Text style={styles.text}>{item.direccion}</Text>}
             {item.barrio && <Text style={styles.text}>Barrio: {item.barrio}</Text>}
-          </View>
+            <Text style={styles.viewDetail}>Ver detalle →</Text>
+          </TouchableOpacity>
         )}
       />
     </View>
@@ -67,4 +71,5 @@ const styles = StyleSheet.create({
   title: { fontSize: 18, fontWeight: 'bold', marginBottom: 4 },
   subtitle: { fontSize: 14, color: '#666', marginBottom: 8 },
   text: { fontSize: 14, color: '#444' },
+  viewDetail: { fontSize: 12, color: '#4F46E5', fontWeight: 'bold', marginTop: 8 },
 })

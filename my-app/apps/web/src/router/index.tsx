@@ -10,6 +10,10 @@ import { VisitaDetallePage } from '../pages/VisitaDetallePage'
 import { DashboardPage } from '../pages/DashboardPage'
 import { RankingPage } from '../pages/RankingPage'
 import { ReporteInstitucionPage } from '../pages/ReporteInstitucionPage'
+import { CategoriasPage } from '../pages/CategoriasPage'
+import { AlimentosPage } from '../pages/AlimentosPage'
+import { FormularioRelevamientoPage } from '../pages/FormularioRelevamientoPage'
+import { InstitucionDetallePage } from '../pages/InstitucionDetallePage'
 
 export const router = createBrowserRouter([
   {
@@ -51,6 +55,16 @@ export const router = createBrowserRouter([
     ),
   },
   {
+    path: '/instituciones/:id',
+    element: (
+      <PrivateRoute>
+        <Layout>
+          <InstitucionDetallePage />
+        </Layout>
+      </PrivateRoute>
+    ),
+  },
+  {
     path: '/visitas',
     element: (
       <PrivateRoute>
@@ -67,6 +81,14 @@ export const router = createBrowserRouter([
         <Layout>
           <VisitaDetallePage />
         </Layout>
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: '/visitas/:id/formulario',
+    element: (
+      <PrivateRoute>
+        <FormularioRelevamientoPage />
       </PrivateRoute>
     ),
   },
@@ -96,6 +118,26 @@ export const router = createBrowserRouter([
       <PrivateRoute>
         <Layout>
           <ReporteInstitucionPage />
+        </Layout>
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: '/categorias',
+    element: (
+      <PrivateRoute>
+        <Layout>
+          <CategoriasPage />
+        </Layout>
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: '/alimentos',
+    element: (
+      <PrivateRoute>
+        <Layout>
+          <AlimentosPage />
         </Layout>
       </PrivateRoute>
     ),

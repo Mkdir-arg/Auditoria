@@ -8,12 +8,12 @@ from .serializers import (
 )
 
 
-class CategoriaAlimentoViewSet(viewsets.ReadOnlyModelViewSet):
+class CategoriaAlimentoViewSet(viewsets.ModelViewSet):
     queryset = CategoriaAlimento.objects.all()
     serializer_class = CategoriaAlimentoSerializer
 
 
-class AlimentoNutricionalViewSet(viewsets.ReadOnlyModelViewSet):
+class AlimentoNutricionalViewSet(viewsets.ModelViewSet):
     queryset = AlimentoNutricional.objects.select_related('categoria').all()
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['categoria']

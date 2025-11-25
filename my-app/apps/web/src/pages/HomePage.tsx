@@ -95,6 +95,39 @@ export function HomePage() {
           </button>
         </div>
       </Card>
+
+      {/* Administration Section */}
+      <Card className="bg-white border-gray-200">
+        <h3 className="text-xl font-semibold text-gray-900 mb-4">⚙️ Administración</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <button 
+            onClick={() => navigate('/categorias')}
+            className="p-4 bg-amber-50 hover:bg-amber-100 rounded-lg border border-amber-200 transition-colors text-left"
+          >
+            <div className="text-2xl mb-2">🏷️</div>
+            <div className="font-medium text-amber-900">Categorías</div>
+            <div className="text-sm text-amber-700">Gestionar categorías de alimentos</div>
+          </button>
+          
+          <button 
+            onClick={() => navigate('/alimentos')}
+            className="p-4 bg-teal-50 hover:bg-teal-100 rounded-lg border border-teal-200 transition-colors text-left"
+          >
+            <div className="text-2xl mb-2">🍎</div>
+            <div className="font-medium text-teal-900">Alimentos</div>
+            <div className="text-sm text-teal-700">Gestionar alimentos nutricionales</div>
+          </button>
+          
+          <button 
+            onClick={() => navigate('/settings')}
+            className="p-4 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 transition-colors text-left"
+          >
+            <div className="text-2xl mb-2">🔧</div>
+            <div className="font-medium text-slate-900">Configuración</div>
+            <div className="text-sm text-slate-700">Ajustes del sistema</div>
+          </button>
+        </div>
+      </Card>
     </div>
   )
 }

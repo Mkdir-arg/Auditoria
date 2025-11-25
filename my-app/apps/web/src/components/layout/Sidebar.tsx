@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { HomeIcon, UsersIcon, Bars3Icon, XMarkIcon, ChartBarIcon, DocumentTextIcon, CogIcon, BuildingOfficeIcon, ClipboardDocumentCheckIcon } from '@heroicons/react/24/outline'
+import { HomeIcon, UsersIcon, Bars3Icon, XMarkIcon, ChartBarIcon, DocumentTextIcon, CogIcon, BuildingOfficeIcon, ClipboardDocumentCheckIcon, TagIcon, BeakerIcon } from '@heroicons/react/24/outline'
 
 interface SidebarProps {
   isCollapsed: boolean
@@ -23,6 +23,8 @@ export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
       { name: 'Por Institución', icon: ChartBarIcon, href: '/reportes/instituciones', color: 'text-yellow-400' }
     ]},
     { section: 'ADMINISTRACIÓN', items: [
+      { name: 'Categorías', icon: TagIcon, href: '/categorias', color: 'text-amber-400' },
+      { name: 'Alimentos', icon: BeakerIcon, href: '/alimentos', color: 'text-teal-400' },
       { name: 'Usuarios', icon: UsersIcon, href: '/users', color: 'text-purple-400' },
       { name: 'Configuración', icon: CogIcon, href: '/settings', color: 'text-gray-400' }
     ]}
@@ -71,6 +73,8 @@ export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
                   <a
                     href={item.href}
                     onClick={() => setActiveItem(item.name)}
+                    target={(item as any).external ? '_blank' : undefined}
+                    rel={(item as any).external ? 'noopener noreferrer' : undefined}
                     className={`group flex items-center px-3 py-3 text-sm rounded-xl transition-all duration-200 hover:bg-slate-700/50 hover:translate-x-1 ${
                       activeItem === item.name 
                         ? 'bg-gradient-to-r from-blue-600/20 to-purple-600/20 border-r-2 border-blue-400 text-blue-300' 
@@ -96,15 +100,7 @@ export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
         ))}
       </nav>
 
-      {/* Footer */}
-      {!isCollapsed && (
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-slate-700">
-          <div className="text-xs text-slate-400 text-center">
-            <div className="mb-1">Sistema v1.0</div>
-            <div className="text-slate-500">© 2024 Auditoria</div>
-          </div>
-        </div>
-      )}
+
     </div>
   )
 }

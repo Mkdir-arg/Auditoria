@@ -1,18 +1,11 @@
 import axios from 'axios'
 import apiClient from './apiClient'
+import { createAuthService } from '../../../shared/services/authService'
 
-interface LoginCredentials {
-  username: string
-  password: string
-}
-
-interface LoginResponse {
-  access: string
-  refresh: string
-}
+const sharedAuthService = createAuthService(apiClient)
 
 export const authService = {
-  async login(credentials: LoginCredentials): Promise<LoginResponse> {
+  async login(credentials: { username: string; password: string }) {
     const response = await axios.post('/api/token/', credentials)
     return response.data
   },
@@ -22,10 +15,8 @@ export const authService = {
     return response.data
   },
 
-  async refreshToken(refreshToken: string): Promise<LoginResponse> {
-    const response = await axios.post('/api/token/refresh/', {
-      refresh: refreshToken,
-    })
+  async refreshToken(refreshToken: string) {
+    const response = await axios.post('/api/token/refresh/', { refresh: refreshToken })
     return response.data
   },
 }

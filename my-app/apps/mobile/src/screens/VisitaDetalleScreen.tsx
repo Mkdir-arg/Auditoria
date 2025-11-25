@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react'
-import { View, Text, ScrollView, StyleSheet, Alert } from 'react-native'
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert } from 'react-native'
 import { auditoriaService } from '../services/auditoriaService'
 
-export const VisitaDetalleScreen = ({ route }: any) => {
+export const VisitaDetalleScreen = ({ route, navigation }: any) => {
   const { id } = route.params
   const [visita, setVisita] = useState<any>(null)
 
@@ -26,6 +26,12 @@ export const VisitaDetalleScreen = ({ route }: any) => {
       <View style={styles.header}>
         <Text style={styles.title}>{visita.institucion_nombre}</Text>
         <Text style={styles.subtitle}>{visita.fecha} - {visita.tipo_comida}</Text>
+        <TouchableOpacity 
+          style={styles.formularioButton}
+          onPress={() => navigation.navigate('FormularioRelevamiento', { visitaId: id })}
+        >
+          <Text style={styles.formularioButtonText}>📋 Completar Formulario</Text>
+        </TouchableOpacity>
       </View>
 
       {visita.platos?.map((plato: any) => (
@@ -100,4 +106,6 @@ const styles = StyleSheet.create({
   nutrientRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 },
   nutrientLabel: { fontSize: 14, color: '#444' },
   nutrientValue: { fontSize: 14, fontWeight: '600', color: '#1976d2' },
+  formularioButton: { backgroundColor: '#10B981', padding: 12, borderRadius: 8, marginTop: 12, alignItems: 'center' },
+  formularioButtonText: { color: 'white', fontSize: 14, fontWeight: 'bold' },
 })

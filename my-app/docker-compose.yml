@@ -38,6 +38,7 @@ services:
       DJANGO_DEBUG: ${DJANGO_DEBUG}
     volumes:
       - ./backend:/app
+      - ./backend/fixtures:/app/fixtures
     ports:
       - "8000:8000"
     networks:
@@ -47,7 +48,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
-      start_period: 30s
+      start_period: 40s
     restart: unless-stopped
 
   web:
