@@ -27,15 +27,74 @@ export function AlimentosPage() {
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
   const [editingId, setEditingId] = useState<number | null>(null)
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<any>({
     codigo_argenfood: '',
     nombre: '',
     categoria: '',
     energia_kcal: '',
     proteinas_g: '',
     grasas_totales_g: '',
-    carbohidratos_totales_g: ''
+    carbohidratos_totales_g: '',
+    agua_g: ''
   })
+
+  const getCamposAdicionales = (categoriaId: string) => {
+    const id = parseInt(categoriaId)
+    const campos = [
+      { key: 'agua_g', label: 'Agua (g)' }
+    ]
+    
+    switch(id) {
+      case 1: // Cereales
+        return [...campos, 
+          { key: 'fibra_g', label: 'Fibra (g)' },
+          { key: 'sodio_mg', label: 'Sodio (mg)' },
+          { key: 'calcio_mg', label: 'Calcio (mg)' },
+          { key: 'hierro_mg', label: 'Hierro (mg)' },
+          { key: 'zinc_mg', label: 'Zinc (mg)' }
+        ]
+      case 2: // Frutas
+        return [...campos,
+          { key: 'fibra_g', label: 'Fibra (g)' },
+          { key: 'vitamina_c_mg', label: 'Vitamina C (mg)' },
+          { key: 'potasio_mg', label: 'Potasio (mg)' },
+          { key: 'calcio_mg', label: 'Calcio (mg)' }
+        ]
+      case 3: // Vegetales
+        return [...campos,
+          { key: 'fibra_g', label: 'Fibra (g)' },
+          { key: 'vitamina_c_mg', label: 'Vitamina C (mg)' },
+          { key: 'sodio_mg', label: 'Sodio (mg)' },
+          { key: 'calcio_mg', label: 'Calcio (mg)' },
+          { key: 'hierro_mg', label: 'Hierro (mg)' }
+        ]
+      case 4: // Grasas y Aceites
+        return [...campos,
+          { key: 'grasas_saturadas_g', label: 'Grasas saturadas (g)' },
+          { key: 'grasas_monoinsat_g', label: 'Grasas monoinsaturadas (g)' },
+          { key: 'grasas_poliinsat_g', label: 'Grasas poliinsaturadas (g)' }
+        ]
+      case 5: // Pescados
+        return [...campos,
+          { key: 'sodio_mg', label: 'Sodio (mg)' },
+          { key: 'calcio_mg', label: 'Calcio (mg)' },
+          { key: 'hierro_mg', label: 'Hierro (mg)' },
+          { key: 'zinc_mg', label: 'Zinc (mg)' },
+          { key: 'grasas_saturadas_g', label: 'Grasas saturadas (g)' }
+        ]
+      case 6: // Mariscos
+        return [...campos,
+          { key: 'sodio_mg', label: 'Sodio (mg)' },
+          { key: 'calcio_mg', label: 'Calcio (mg)' },
+          { key: 'hierro_mg', label: 'Hierro (mg)' },
+          { key: 'fosforo_mg', label: 'Fósforo (mg)' }
+        ]
+      case 7: // Conservas
+        return campos
+      default:
+        return campos
+    }
+  }
 
   useEffect(() => {
     fetchAlimentos()
@@ -65,7 +124,7 @@ export function AlimentosPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      const data = {
+      const data: any = {
         codigo_argenfood: parseInt(formData.codigo_argenfood),
         nombre: formData.nombre,
         categoria: parseInt(formData.categoria),
@@ -74,6 +133,13 @@ export function AlimentosPage() {
         grasas_totales_g: formData.grasas_totales_g ? parseFloat(formData.grasas_totales_g) : null,
         carbohidratos_totales_g: formData.carbohidratos_totales_g ? parseFloat(formData.carbohidratos_totales_g) : null
       }
+      
+      // Agregar campos adicionales
+      getCamposAdicionales(formData.categoria).forEach(campo => {
+        if (formData[campo.key]) {
+          data[campo.key] = parseFloat(formData[campo.key])
+        }
+      })
       if (editingId) {
         await axios.put(`http://localhost:8000/api/nutricion/alimentos/${editingId}/`, data)
       } else {
@@ -82,25 +148,42 @@ export function AlimentosPage() {
       fetchAlimentos()
       setShowForm(false)
       setEditingId(null)
-      setFormData({ codigo_argenfood: '', nombre: '', categoria: '', energia_kcal: '', proteinas_g: '', grasas_totales_g: '', carbohidratos_totales_g: '' })
+      setFormData({ codigo_argenfood: '', nombre: '', categoria: '', energia_kcal: '', proteinas_g: '', grasas_totales_g: '', carbohidratos_totales_g: '', agua_g: '' })
     } catch (error) {
       console.error('Error guardando alimento:', error)
       alert('Error al guardar el alimento')
     }
   }
 
-  const handleEdit = (alimento: Alimento) => {
-    setFormData({
-      codigo_argenfood: alimento.codigo_argenfood.toString(),
-      nombre: alimento.nombre,
-      categoria: alimento.categoria.toString(),
-      energia_kcal: alimento.energia_kcal?.toString() || '',
-      proteinas_g: alimento.proteinas_g?.toString() || '',
-      grasas_totales_g: alimento.grasas_totales_g?.toString() || '',
-      carbohidratos_totales_g: alimento.carbohidratos_totales_g?.toString() || ''
-    })
-    setEditingId(alimento.id)
-    setShowForm(true)
+  const handleEdit = async (alimento: Alimento) => {
+    try {
+      // Obtener el alimento completo con todos sus campos
+      const res = await axios.get(`http://localhost:8000/api/nutricion/alimentos/${alimento.id}/`)
+      const alimentoCompleto = res.data
+      
+      const newFormData: any = {
+        codigo_argenfood: alimentoCompleto.codigo_argenfood.toString(),
+        nombre: alimentoCompleto.nombre,
+        categoria: alimentoCompleto.categoria.toString(),
+        energia_kcal: alimentoCompleto.energia_kcal?.toString() || '',
+        proteinas_g: alimentoCompleto.proteinas_g?.toString() || '',
+        grasas_totales_g: alimentoCompleto.grasas_totales_g?.toString() || '',
+        carbohidratos_totales_g: alimentoCompleto.carbohidratos_totales_g?.toString() || ''
+      }
+      
+      // Cargar campos adicionales
+      getCamposAdicionales(alimentoCompleto.categoria.toString()).forEach(campo => {
+        if (alimentoCompleto[campo.key]) {
+          newFormData[campo.key] = alimentoCompleto[campo.key].toString()
+        }
+      })
+      
+      setFormData(newFormData)
+      setEditingId(alimento.id)
+      setShowForm(true)
+    } catch (error) {
+      console.error('Error cargando alimento:', error)
+    }
   }
 
   const handleDelete = async (id: number) => {
@@ -125,7 +208,7 @@ export function AlimentosPage() {
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">🍎 Alimentos Nutricionales</h1>
         <button
-          onClick={() => { setShowForm(!showForm); setEditingId(null); setFormData({ codigo_argenfood: '', nombre: '', categoria: '', energia_kcal: '', proteinas_g: '', grasas_totales_g: '', carbohidratos_totales_g: '' }); }}
+          onClick={() => { setShowForm(!showForm); setEditingId(null); setFormData({ codigo_argenfood: '', nombre: '', categoria: '', energia_kcal: '', proteinas_g: '', grasas_totales_g: '', carbohidratos_totales_g: '', agua_g: '' }); }}
           className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
         >
           {showForm ? '✕ Cancelar' : '+ Nuevo Alimento'}
@@ -174,6 +257,7 @@ export function AlimentosPage() {
                 required
               />
             </div>
+            <h4 className="font-semibold text-gray-700 mt-4 mb-2">Campos Comunes</h4>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Energía (kcal)</label>
@@ -198,7 +282,7 @@ export function AlimentosPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Grasas (g)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Grasas totales (g)</label>
                 <input
                   type="number"
                   step="0.01"
@@ -220,6 +304,28 @@ export function AlimentosPage() {
                 />
               </div>
             </div>
+            
+            {formData.categoria && (
+              <>
+                <h4 className="font-semibold text-gray-700 mt-4 mb-2">
+                  Campos Adicionales - {categorias.find(c => c.id === parseInt(formData.categoria))?.nombre}
+                </h4>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {getCamposAdicionales(formData.categoria).map(campo => (
+                    <div key={campo.key}>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">{campo.label}</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={formData[campo.key] || ''}
+                        onChange={(e) => setFormData({ ...formData, [campo.key]: e.target.value })}
+                        className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
             <div className="flex gap-2">
               <button type="submit" className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium">
                 {editingId ? '✓ Actualizar' : '✓ Guardar'}

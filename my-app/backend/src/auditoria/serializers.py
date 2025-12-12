@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Institucion, VisitaAuditoria, PlatoObservado, IngredientePlato
+from .models import Institucion, VisitaAuditoria, PlatoObservado, IngredientePlato, PlatoPlantilla, IngredientePlantilla
 
 
 class InstitucionSerializer(serializers.ModelSerializer):
@@ -35,6 +35,7 @@ class VisitaAuditoriaSerializer(serializers.ModelSerializer):
     class Meta:
         model = VisitaAuditoria
         fields = '__all__'
+        read_only_fields = []
 
 
 class VisitaAuditoriaListSerializer(serializers.ModelSerializer):
@@ -44,3 +45,22 @@ class VisitaAuditoriaListSerializer(serializers.ModelSerializer):
     class Meta:
         model = VisitaAuditoria
         fields = ['id', 'institucion', 'institucion_nombre', 'fecha', 'tipo_comida', 'cantidad_platos']
+
+
+class IngredientePlantillaSerializer(serializers.ModelSerializer):
+    alimento_nombre = serializers.CharField(source='alimento.nombre', read_only=True)
+    
+    class Meta:
+        model = IngredientePlantilla
+        fields = '__all__'
+
+
+class PlatoPlantillaSerializer(serializers.ModelSerializer):
+    ingredientes_plantilla = IngredientePlantillaSerializer(many=True, read_only=True)
+    cantidad_ingredientes = serializers.IntegerField(source='ingredientes_plantilla.count', read_only=True)
+    
+    class Meta:
+        model = PlatoPlantilla
+        fields = '__all__'
+        read_only_fields = ['energia_kcal_total', 'proteinas_g_total', 'grasas_totales_g_total',
+                           'carbohidratos_g_total', 'fibra_g_total', 'sodio_mg_total']

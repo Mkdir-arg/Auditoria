@@ -14,6 +14,8 @@ import { CategoriasPage } from '../pages/CategoriasPage'
 import { AlimentosPage } from '../pages/AlimentosPage'
 import { FormularioRelevamientoPage } from '../pages/FormularioRelevamientoPage'
 import { InstitucionDetallePage } from '../pages/InstitucionDetallePage'
+import PlatosPlantillaPage from '../pages/PlatosPlantillaPage'
+import PlatoPlantillaDetallePage from '../pages/PlatoPlantillaDetallePage'
 
 export const router = createBrowserRouter([
   {
@@ -138,6 +140,26 @@ export const router = createBrowserRouter([
       <PrivateRoute>
         <Layout>
           <AlimentosPage />
+        </Layout>
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: '/platos-plantilla',
+    element: (
+      <PrivateRoute>
+        <Layout>
+          <PlatosPlantillaPage />
+        </Layout>
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: '/platos-plantilla/:id',
+    element: (
+      <PrivateRoute>
+        <Layout>
+          <PlatoPlantillaDetallePage />
         </Layout>
       </PrivateRoute>
     ),

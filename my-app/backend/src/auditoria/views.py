@@ -4,13 +4,15 @@ from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
 from django.core.cache import cache
-from .models import Institucion, VisitaAuditoria, PlatoObservado, IngredientePlato
+from .models import Institucion, VisitaAuditoria, PlatoObservado, IngredientePlato, PlatoPlantilla, IngredientePlantilla
 from .serializers import (
     InstitucionSerializer,
     VisitaAuditoriaSerializer,
     VisitaAuditoriaListSerializer,
     PlatoObservadoSerializer,
-    IngredientePlatoSerializer
+    IngredientePlatoSerializer,
+    PlatoPlantillaSerializer,
+    IngredientePlantillaSerializer
 )
 from .reports import ReportService
 
@@ -122,3 +124,82 @@ def comparativa_nutricional(request):
     fecha_fin = request.data.get('fecha_fin')
     data = ReportService.get_comparativa_nutricional(institucion_ids, fecha_inicio, fecha_fin)
     return Response(data)
+
+
+class PlatoPlantillaViewSet(viewsets.ModelViewSet):
+    queryset = PlatoPlantilla.objects.prefetch_related('ingredientes_plantilla__alimento').all()
+    serializer_class = PlatoPlantillaSerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filterset_fields = ['tipo_plato', 'activo']
+    search_fields = ['nombre', 'descripcion']
+
+    @action(detail=True, methods=['post'])
+    def recalcular(self, request, pk=None):
+        plato = self.get_object()
+        totales = plato.recalcular_totales(save=True)
+        return Response(totales)
+
+    @action(detail=True, methods=['post'])
+    def clonar_a_visita(self, request, pk=None):
+        """Clona este plato plantilla a una visita específica"""
+        plantilla = self.get_object()
+        visita_id = request.data.get('visita_id')
+        
+        if not visita_id:
+            return Response({'error': 'visita_id requerido'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            visita = VisitaAuditoria.objects.get(id=visita_id)
+        except VisitaAuditoria.DoesNotExist:
+            return Response({'error': 'Visita no encontrada'}, status=status.HTTP_404_NOT_FOUND)
+        
+        # Crear plato observado desde plantilla
+        plato = PlatoObservado.objects.create(
+            visita=visita,
+            nombre=plantilla.nombre,
+            tipo_plato=plantilla.tipo_plato,
+            energia_kcal_total=plantilla.energia_kcal_total,
+            proteinas_g_total=plantilla.proteinas_g_total,
+            grasas_totales_g_total=plantilla.grasas_totales_g_total,
+            carbohidratos_g_total=plantilla.carbohidratos_g_total,
+            fibra_g_total=plantilla.fibra_g_total,
+            sodio_mg_total=plantilla.sodio_mg_total
+        )
+        
+        # Copiar ingredientes
+        for ing_plantilla in plantilla.ingredientes_plantilla.all():
+            IngredientePlato.objects.create(
+                plato=plato,
+                alimento=ing_plantilla.alimento,
+                cantidad=ing_plantilla.cantidad,
+                unidad=ing_plantilla.unidad,
+                orden=ing_plantilla.orden
+            )
+        
+        # Recalcular por si acaso
+        for ing in plato.ingredientes.all():
+            ing.recalcular_aporte(save=True)
+        plato.recalcular_totales(save=True)
+        
+        serializer = PlatoObservadoSerializer(plato)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class IngredientePlantillaViewSet(viewsets.ModelViewSet):
+    queryset = IngredientePlantilla.objects.select_related('plato_plantilla', 'alimento').all()
+    serializer_class = IngredientePlantillaSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['plato_plantilla']
+
+    def perform_create(self, serializer):
+        ingrediente = serializer.save()
+        ingrediente.plato_plantilla.recalcular_totales(save=True)
+
+    def perform_update(self, serializer):
+        ingrediente = serializer.save()
+        ingrediente.plato_plantilla.recalcular_totales(save=True)
+
+    def perform_destroy(self, instance):
+        plato = instance.plato_plantilla
+        instance.delete()
+        plato.recalcular_totales(save=True)

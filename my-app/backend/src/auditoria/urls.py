@@ -5,6 +5,8 @@ from .views import (
     VisitaAuditoriaViewSet,
     PlatoObservadoViewSet,
     IngredientePlatoViewSet,
+    PlatoPlantillaViewSet,
+    IngredientePlantillaViewSet,
     dashboard_stats,
     visitas_por_periodo,
     reporte_institucion,
@@ -17,6 +19,8 @@ router.register(r'instituciones', InstitucionViewSet)
 router.register(r'visitas', VisitaAuditoriaViewSet)
 router.register(r'platos', PlatoObservadoViewSet)
 router.register(r'ingredientes', IngredientePlatoViewSet)
+router.register(r'platos-plantilla', PlatoPlantillaViewSet)
+router.register(r'ingredientes-plantilla', IngredientePlantillaViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),

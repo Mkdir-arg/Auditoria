@@ -1,8 +1,5 @@
 import axios from 'axios'
 import apiClient from './apiClient'
-import { createAuthService } from '../../../shared/services/authService'
-
-const sharedAuthService = createAuthService(apiClient)
 
 export const authService = {
   async login(credentials: { username: string; password: string }) {

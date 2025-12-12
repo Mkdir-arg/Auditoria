@@ -23,7 +23,7 @@ export function LoginPage() {
   return (
     <div className="min-h-screen flex">
       {/* Left: Image with Overlay */}
-      <div className="w-1/2 h-screen hidden lg:block relative">
+      <div className="w-1/2 h-screen hidden lg:block relative overflow-hidden">
         <img 
           src="https://img.freepik.com/fotos-premium/imagen-fondo_910766-187.jpg?w=826" 
           alt="Auditoría Nutricional" 
@@ -39,30 +39,30 @@ export function LoginPage() {
       </div>
       
       {/* Right: Login Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
-        <div className="w-full max-w-md px-8">
+      <div className="w-full lg:w-1/2 flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 p-4 sm:p-6 md:p-8">
+        <div className="w-full max-w-md">
           {/* Logo/Icon */}
-          <div className="text-center mb-8">
-            <div className="inline-block p-4 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl shadow-lg mb-4">
-              <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="text-center mb-6 sm:mb-8">
+            <div className="inline-block p-3 sm:p-4 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl sm:rounded-2xl shadow-lg mb-3 sm:mb-4">
+              <svg className="w-10 h-10 sm:w-12 sm:h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
             </div>
-            <h2 className="text-3xl font-bold text-gray-800 mb-2">Bienvenido</h2>
-            <p className="text-gray-600">Ingresa tus credenciales para continuar</p>
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">Bienvenido</h2>
+            <p className="text-sm sm:text-base text-gray-600">Ingresa tus credenciales para continuar</p>
           </div>
 
           {/* Form Card */}
-          <div className="bg-white rounded-2xl shadow-xl p-8">
-            <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl p-6 sm:p-8">
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
               {/* Username Input */}
               <div>
-                <label htmlFor="username" className="block text-sm font-semibold text-gray-700 mb-2">
+                <label htmlFor="username" className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">
                   Usuario
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
                   </div>
@@ -71,7 +71,7 @@ export function LoginPage() {
                     id="username" 
                     value={credentials.username}
                     onChange={(e) => setCredentials({ ...credentials, username: e.target.value })}
-                    className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 transition-colors" 
+                    className="w-full pl-9 sm:pl-10 pr-3 sm:pr-4 py-2.5 sm:py-3 text-sm sm:text-base border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 transition-colors" 
                     placeholder="Ingresa tu usuario"
                     autoComplete="off"
                     required
@@ -81,12 +81,12 @@ export function LoginPage() {
               
               {/* Password Input */}
               <div>
-                <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
+                <label htmlFor="password" className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">
                   Contraseña
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                     </svg>
                   </div>
@@ -95,7 +95,7 @@ export function LoginPage() {
                     id="password" 
                     value={credentials.password}
                     onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
-                    className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 transition-colors" 
+                    className="w-full pl-9 sm:pl-10 pr-3 sm:pr-4 py-2.5 sm:py-3 text-sm sm:text-base border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 transition-colors" 
                     placeholder="Ingresa tu contraseña"
                     autoComplete="off"
                     required
@@ -130,7 +130,7 @@ export function LoginPage() {
               <button 
                 type="submit" 
                 disabled={isLoading}
-                className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-3 px-4 rounded-lg shadow-lg transform transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-2.5 sm:py-3 px-4 text-sm sm:text-base rounded-lg shadow-lg transform transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
               >
                 {isLoading ? (
                   <span className="flex items-center justify-center">
@@ -146,7 +146,7 @@ export function LoginPage() {
           </div>
 
           {/* Footer */}
-          <p className="text-center text-sm text-gray-600 mt-8">
+          <p className="text-center text-xs sm:text-sm text-gray-600 mt-6 sm:mt-8">
             Sistema de Auditoría Nutricional © 2024
           </p>
         </div>

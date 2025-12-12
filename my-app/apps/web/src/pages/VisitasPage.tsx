@@ -83,19 +83,19 @@ export const VisitasPage: React.FC = () => {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl p-8 text-white shadow-xl">
-        <div className="flex justify-between items-center">
+      <div className="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 text-white shadow-xl">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-4xl font-bold mb-2">📋 Visitas de Auditoría</h1>
-            <p className="text-emerald-100 text-lg">{visitas.length} visitas registradas</p>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-1 sm:mb-2">📋 Visitas de Auditoría</h1>
+            <p className="text-emerald-100 text-sm sm:text-base md:text-lg">{visitas.length} visitas registradas</p>
           </div>
           <button
             onClick={() => setIsModalOpen(true)}
-            className="bg-white text-emerald-600 hover:bg-emerald-50 shadow-lg px-6 py-3 text-lg font-semibold rounded-lg flex items-center gap-2 transition-colors"
+            className="w-full sm:w-auto bg-white text-emerald-600 hover:bg-emerald-50 shadow-lg px-4 sm:px-6 py-2 sm:py-3 text-base sm:text-lg font-semibold rounded-lg flex items-center justify-center gap-2 transition-colors"
           >
-            <PlusIcon className="w-6 h-6" />
+            <PlusIcon className="w-5 h-5 sm:w-6 sm:h-6" />
             Nueva Visita
           </button>
         </div>
@@ -112,27 +112,27 @@ export const VisitasPage: React.FC = () => {
           <p className="text-gray-500 text-lg">No se encontraron visitas</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
           {visitas.map((visita) => (
             <div
               key={visita.id}
               className="group relative bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 hover:scale-105"
             >
               {/* Header con gradiente */}
-              <div className={`bg-gradient-to-r ${getTipoComidaColor(visita.tipo_comida)} p-6 text-white`}>
+              <div className={`bg-gradient-to-r ${getTipoComidaColor(visita.tipo_comida)} p-4 sm:p-6 text-white`}>
                 <div className="flex justify-between items-start">
-                  <div className="flex items-center gap-3">
-                    <span className="text-4xl">{getTipoComidaIcon(visita.tipo_comida)}</span>
-                    <div>
+                  <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                    <span className="text-3xl sm:text-4xl flex-shrink-0">{getTipoComidaIcon(visita.tipo_comida)}</span>
+                    <div className="min-w-0 flex-1">
                       <span className="text-xs font-semibold uppercase tracking-wider opacity-90">{visita.tipo_comida}</span>
-                      <h3 className="text-xl font-bold mt-1">{visita.institucion_nombre}</h3>
+                      <h3 className="text-base sm:text-xl font-bold mt-1 truncate">{visita.institucion_nombre}</h3>
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* Contenido */}
-              <div className="p-6 space-y-3">
+              <div className="p-4 sm:p-6 space-y-2 sm:space-y-3">
                 <div className="flex items-center gap-2 text-gray-600">
                   <svg className="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -151,12 +151,12 @@ export const VisitasPage: React.FC = () => {
               </div>
 
               {/* Acciones */}
-              <div className="px-6 pb-6">
+              <div className="px-4 sm:px-6 pb-4 sm:pb-6">
                 <button
                   onClick={() => navigate(`/visitas/${visita.id}`)}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg hover:from-emerald-700 hover:to-teal-700 transition-all font-medium shadow-md hover:shadow-lg"
+                  className="w-full flex items-center justify-center gap-2 px-3 sm:px-4 py-2 sm:py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg hover:from-emerald-700 hover:to-teal-700 transition-all font-medium shadow-md hover:shadow-lg text-sm sm:text-base"
                 >
-                  <EyeIcon className="w-5 h-5" />
+                  <EyeIcon className="w-4 h-4 sm:w-5 sm:h-5" />
                   Ver Detalle y Platos
                 </button>
               </div>

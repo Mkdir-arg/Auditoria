@@ -11,8 +11,9 @@ Sistema web para que auditores del Gobierno evalúen si las comidas servidas en 
 - ✅ **FASE 3**: Frontend React - COMPLETADA
 - ✅ **FASE 4**: Reportes y Estadísticas - COMPLETADA
 - ✅ **FASE 5**: Aplicación Móvil React Native - COMPLETADA
+- ✅ **FASE 6**: Diseño Responsive - COMPLETADA
 
-🎉 **PROYECTO 100% COMPLETO - WEB Y MÓVIL**
+🎉 **PROYECTO 100% COMPLETO - WEB Y MÓVIL - RESPONSIVE**
 
 ## 🚀 Inicio Rápido
 
@@ -74,6 +75,8 @@ docker exec -it my-app-backend-1 python src/manage.py importar_alimentos \
 - [Frontend - Fase 3](my-app/FASE3_FRONTEND.md)
 - [Reportes - Fase 4](my-app/FASE4_REPORTES.md)
 - [Móvil - Fase 5](my-app/FASE5_MOBILE.md)
+- [Diseño Responsive - Fase 6](my-app/RESPONSIVE_DESIGN.md) 📱
+- [Ejemplos Responsive](my-app/RESPONSIVE_EXAMPLES.md) 💡
 
 ### Performance y Docker
 - [Análisis de Performance](my-app/ANALISIS_PERFORMANCE.md)
@@ -153,9 +156,10 @@ POST /api/auditoria/reportes/comparativa/
 - React 18 + TypeScript
 - Vite
 - React Router v6
-- Tailwind CSS
+- Tailwind CSS (Responsive)
 - Axios
 - Zustand
+- Mobile-First Design
 
 ### Frontend Móvil
 - React Native 0.72

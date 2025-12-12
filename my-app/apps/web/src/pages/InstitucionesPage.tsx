@@ -118,22 +118,22 @@ export const InstitucionesPage: React.FC = () => {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-8 text-white shadow-xl">
-        <div className="flex justify-between items-center">
+      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 text-white shadow-xl">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-4xl font-bold mb-2">🏫 Instituciones</h1>
-            <p className="text-indigo-100 text-lg">{instituciones.length} instituciones registradas</p>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-1 sm:mb-2">🏫 Instituciones</h1>
+            <p className="text-indigo-100 text-sm sm:text-base md:text-lg">{instituciones.length} instituciones registradas</p>
           </div>
           <button
             onClick={() => {
               resetForm()
               setIsModalOpen(true)
             }}
-            className="bg-white text-indigo-600 hover:bg-indigo-50 shadow-lg px-6 py-3 text-lg font-semibold rounded-lg flex items-center gap-2 transition-colors"
+            className="w-full sm:w-auto bg-white text-indigo-600 hover:bg-indigo-50 shadow-lg px-4 sm:px-6 py-2 sm:py-3 text-base sm:text-lg font-semibold rounded-lg flex items-center justify-center gap-2 transition-colors"
           >
-            <PlusIcon className="w-6 h-6" />
+            <PlusIcon className="w-5 h-5 sm:w-6 sm:h-6" />
             Nueva Institución
           </button>
         </div>
@@ -141,8 +141,8 @@ export const InstitucionesPage: React.FC = () => {
 
       {/* Buscador */}
       <div className="relative">
-        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-          <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none">
+          <svg className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
         </div>
@@ -151,7 +151,7 @@ export const InstitucionesPage: React.FC = () => {
           placeholder="Buscar por nombre, código, barrio..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full pl-12 pr-4 py-4 text-lg border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:outline-none shadow-sm"
+          className="w-full pl-10 sm:pl-12 pr-3 sm:pr-4 py-3 sm:py-4 text-sm sm:text-base md:text-lg border-2 border-gray-200 rounded-lg sm:rounded-xl focus:border-indigo-500 focus:outline-none shadow-sm"
         />
       </div>
 
@@ -166,23 +166,23 @@ export const InstitucionesPage: React.FC = () => {
           <p className="text-gray-500 text-lg">No se encontraron instituciones</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
           {instituciones.map((inst) => (
             <div
               key={inst.id}
               className="group relative bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 hover:scale-105"
             >
               {/* Header con gradiente */}
-              <div className={`bg-gradient-to-r ${getTipoColor(inst.tipo)} p-6 text-white`}>
-                <div className="flex justify-between items-start">
-                  <div className="flex items-center gap-3">
-                    <span className="text-4xl">{getTipoIcon(inst.tipo)}</span>
-                    <div>
+              <div className={`bg-gradient-to-r ${getTipoColor(inst.tipo)} p-4 sm:p-6 text-white`}>
+                <div className="flex justify-between items-start gap-2">
+                  <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                    <span className="text-3xl sm:text-4xl flex-shrink-0">{getTipoIcon(inst.tipo)}</span>
+                    <div className="min-w-0 flex-1">
                       <span className="text-xs font-semibold uppercase tracking-wider opacity-90">{inst.tipo}</span>
-                      <h3 className="text-xl font-bold mt-1">{inst.nombre}</h3>
+                      <h3 className="text-base sm:text-xl font-bold mt-1 truncate">{inst.nombre}</h3>
                     </div>
                   </div>
-                  <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                  <span className={`px-2 sm:px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap flex-shrink-0 ${
                     inst.activo ? 'bg-green-400 text-green-900' : 'bg-gray-400 text-gray-900'
                   }`}>
                     {inst.activo ? '✓ Activa' : '✕ Inactiva'}
@@ -191,7 +191,7 @@ export const InstitucionesPage: React.FC = () => {
               </div>
 
               {/* Contenido */}
-              <div className="p-6 space-y-3">
+              <div className="p-4 sm:p-6 space-y-2 sm:space-y-3">
                 <div className="flex items-center gap-2 text-gray-600">
                   <svg className="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
@@ -224,26 +224,28 @@ export const InstitucionesPage: React.FC = () => {
               </div>
 
               {/* Acciones */}
-              <div className="px-6 pb-6 flex gap-2">
+              <div className="px-4 sm:px-6 pb-4 sm:pb-6 flex flex-col sm:flex-row gap-2">
                 <button
                   onClick={() => navigate(`/instituciones/${inst.id}`)}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all font-medium shadow-md hover:shadow-lg"
+                  className="flex-1 flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all font-medium shadow-md hover:shadow-lg text-sm sm:text-base"
                 >
                   <EyeIcon className="w-4 h-4" />
                   Ver Detalle
                 </button>
-                <button
-                  onClick={() => handleEdit(inst)}
-                  className="px-4 py-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-colors font-medium"
-                >
-                  <PencilIcon className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => handleDelete(inst.id)}
-                  className="px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors font-medium"
-                >
-                  <TrashIcon className="w-4 h-4" />
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleEdit(inst)}
+                    className="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-colors font-medium"
+                  >
+                    <PencilIcon className="w-4 h-4 mx-auto" />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(inst.id)}
+                    className="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors font-medium"
+                  >
+                    <TrashIcon className="w-4 h-4 mx-auto" />
+                  </button>
+                </div>
               </div>
             </div>
           ))}

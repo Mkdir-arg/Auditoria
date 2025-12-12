@@ -1,12 +1,13 @@
 import { useState } from 'react'
-import { HomeIcon, UsersIcon, Bars3Icon, XMarkIcon, ChartBarIcon, DocumentTextIcon, CogIcon, BuildingOfficeIcon, ClipboardDocumentCheckIcon, TagIcon, BeakerIcon } from '@heroicons/react/24/outline'
+import { HomeIcon, UsersIcon, Bars3Icon, XMarkIcon, ChartBarIcon, DocumentTextIcon, CogIcon, BuildingOfficeIcon, ClipboardDocumentCheckIcon, TagIcon, BeakerIcon, RectangleStackIcon } from '@heroicons/react/24/outline'
 
 interface SidebarProps {
   isCollapsed: boolean
   onToggle: () => void
+  onMobileClose?: () => void
 }
 
-export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
+export function Sidebar({ isCollapsed, onToggle, onMobileClose }: SidebarProps) {
   const [activeItem, setActiveItem] = useState('Inicio')
   
   const menuItems = [
@@ -23,12 +24,19 @@ export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
       { name: 'Por Institución', icon: ChartBarIcon, href: '/reportes/instituciones', color: 'text-yellow-400' }
     ]},
     { section: 'ADMINISTRACIÓN', items: [
+      { name: 'Platos', icon: RectangleStackIcon, href: '/platos-plantilla', color: 'text-pink-400' },
       { name: 'Categorías', icon: TagIcon, href: '/categorias', color: 'text-amber-400' },
       { name: 'Alimentos', icon: BeakerIcon, href: '/alimentos', color: 'text-teal-400' },
       { name: 'Usuarios', icon: UsersIcon, href: '/users', color: 'text-purple-400' },
       { name: 'Configuración', icon: CogIcon, href: '/settings', color: 'text-gray-400' }
     ]}
   ]
+
+  const handleLinkClick = () => {
+    if (onMobileClose) {
+      onMobileClose()
+    }
+  }
 
   return (
     <div className={`bg-gradient-to-b from-slate-800 to-slate-900 text-slate-100 h-full transition-all duration-300 shadow-xl ${isCollapsed ? 'w-20' : 'w-72'}`}>
@@ -72,7 +80,10 @@ export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
                 <li key={item.name}>
                   <a
                     href={item.href}
-                    onClick={() => setActiveItem(item.name)}
+                    onClick={() => {
+                      setActiveItem(item.name)
+                      handleLinkClick()
+                    }}
                     target={(item as any).external ? '_blank' : undefined}
                     rel={(item as any).external ? 'noopener noreferrer' : undefined}
                     className={`group flex items-center px-3 py-3 text-sm rounded-xl transition-all duration-200 hover:bg-slate-700/50 hover:translate-x-1 ${

@@ -41,17 +41,17 @@ export const RankingPage: React.FC = () => {
   }
 
   return (
-    <div className="p-6">
-      <Button onClick={() => navigate('/dashboard')} className="mb-4 bg-gray-500 hover:bg-gray-600">
-        <ArrowLeftIcon className="w-5 h-5 mr-2" />
+    <div className="space-y-4 sm:space-y-6">
+      <Button onClick={() => navigate('/dashboard')} className="mb-3 sm:mb-4 bg-gray-500 hover:bg-gray-600 text-sm sm:text-base">
+        <ArrowLeftIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
         Volver
       </Button>
 
-      <h1 className="text-2xl font-bold mb-6">Ranking de Instituciones</h1>
+      <h1 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">Ranking de Instituciones</h1>
 
-      <Card className="mb-6">
-        <h3 className="font-semibold mb-4">Filtros</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <Card className="mb-4 sm:mb-6">
+        <h3 className="font-semibold mb-3 sm:mb-4 text-sm sm:text-base">Filtros</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           <Input
             label="Fecha Inicio"
             type="date"
@@ -76,28 +76,28 @@ export const RankingPage: React.FC = () => {
         <p>Cargando ranking...</p>
       ) : (
         <Card>
-          <div className="space-y-3">
+          <div className="space-y-2 sm:space-y-3">
             {ranking.map((item, index) => (
               <div
                 key={item.institucion__id}
-                className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                className="flex items-center justify-between p-3 sm:p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors gap-3"
               >
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center justify-center w-10 h-10">
+                <div className="flex items-center gap-2 sm:gap-3 md:gap-4 flex-1 min-w-0">
+                  <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0">
                     {index < 3 ? (
-                      <TrophyIcon className={`w-8 h-8 ${getMedalColor(index)}`} />
+                      <TrophyIcon className={`w-6 h-6 sm:w-8 sm:h-8 ${getMedalColor(index)}`} />
                     ) : (
-                      <span className="text-xl font-bold text-gray-400">#{index + 1}</span>
+                      <span className="text-base sm:text-xl font-bold text-gray-400">#{index + 1}</span>
                     )}
                   </div>
-                  <div>
-                    <h3 className="font-semibold text-lg">{item.institucion__nombre}</h3>
-                    <p className="text-sm text-gray-600 capitalize">{item.institucion__tipo}</p>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-semibold text-sm sm:text-base md:text-lg truncate">{item.institucion__nombre}</h3>
+                    <p className="text-xs sm:text-sm text-gray-600 capitalize">{item.institucion__tipo}</p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-2xl font-bold text-blue-600">{item.total_visitas}</p>
-                  <p className="text-sm text-gray-600">visitas</p>
+                <div className="text-right flex-shrink-0">
+                  <p className="text-lg sm:text-xl md:text-2xl font-bold text-blue-600">{item.total_visitas}</p>
+                  <p className="text-xs sm:text-sm text-gray-600">visitas</p>
                 </div>
               </div>
             ))}
