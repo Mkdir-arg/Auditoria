@@ -73,4 +73,9 @@ export const reportesService = {
     const response = await apiClient.post('/auditoria/reportes/comparativa/', data)
     return response.data
   },
+
+  async getReporteConFiltros(params: any) {
+    const response = await apiClient.get('/auditoria/reportes/instituciones-filtros/', { params })
+    return response.data
+  },
 }

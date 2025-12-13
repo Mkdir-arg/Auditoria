@@ -29,6 +29,10 @@ class PlatoPlantilla(models.Model):
         verbose_name = "Plato plantilla"
         verbose_name_plural = "Platos plantilla"
         ordering = ['nombre']
+        indexes = [
+            models.Index(fields=['tipo_plato', 'activo']),
+            models.Index(fields=['activo', 'nombre']),
+        ]
 
     def __str__(self):
         return self.nombre
@@ -92,6 +96,9 @@ class IngredientePlantilla(models.Model):
         verbose_name = "Ingrediente plantilla"
         verbose_name_plural = "Ingredientes plantilla"
         ordering = ['orden', 'id']
+        indexes = [
+            models.Index(fields=['plato_plantilla', 'orden']),
+        ]
 
     def __str__(self):
         return f"{self.alimento.nombre} ({self.cantidad}{self.unidad})"
@@ -118,6 +125,12 @@ class Institucion(models.Model):
         verbose_name = "Institución"
         verbose_name_plural = "Instituciones"
         ordering = ['nombre']
+        indexes = [
+            models.Index(fields=['tipo', 'activo']),
+            models.Index(fields=['activo', 'nombre']),
+            models.Index(fields=['codigo']),
+            models.Index(fields=['comuna', 'activo']),
+        ]
 
     def __str__(self):
         return f"{self.nombre} ({self.codigo})"
@@ -151,6 +164,9 @@ class VisitaAuditoria(models.Model):
         ordering = ['-fecha']
         indexes = [
             models.Index(fields=['institucion', '-fecha']),
+            models.Index(fields=['-fecha']),
+            models.Index(fields=['tipo_comida', '-fecha']),
+            models.Index(fields=['fecha']),
         ]
 
     def __str__(self):
@@ -205,6 +221,10 @@ class PlatoObservado(models.Model):
         verbose_name = "Plato observado"
         verbose_name_plural = "Platos observados"
         ordering = ['id']
+        indexes = [
+            models.Index(fields=['visita', 'tipo_plato']),
+            models.Index(fields=['visita']),
+        ]
 
     def __str__(self):
         return f"{self.nombre} ({self.visita})"
@@ -303,6 +323,10 @@ class IngredientePlato(models.Model):
         verbose_name = "Ingrediente de plato"
         verbose_name_plural = "Ingredientes de plato"
         ordering = ['orden', 'id']
+        indexes = [
+            models.Index(fields=['plato', 'orden']),
+            models.Index(fields=['alimento']),
+        ]
 
     def __str__(self):
         return f"{self.alimento.nombre} ({self.cantidad}{self.unidad})"

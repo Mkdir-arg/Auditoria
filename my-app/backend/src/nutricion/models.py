@@ -9,6 +9,9 @@ class CategoriaAlimento(models.Model):
         verbose_name = "Categoría de alimento"
         verbose_name_plural = "Categorías de alimentos"
         ordering = ['nombre']
+        indexes = [
+            models.Index(fields=['codigo']),
+        ]
 
     def __str__(self):
         return self.nombre
@@ -70,6 +73,9 @@ class AlimentoNutricional(models.Model):
         ordering = ['nombre']
         indexes = [
             models.Index(fields=['categoria', 'nombre']),
+            models.Index(fields=['nombre']),
+            models.Index(fields=['codigo_argenfood']),
+            models.Index(fields=['energia_kcal']),
         ]
 
     def __str__(self):

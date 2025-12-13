@@ -12,6 +12,7 @@ from .views import (
     reporte_institucion,
     ranking_instituciones,
     comparativa_nutricional,
+    instituciones_con_filtros,
 )
 
 router = DefaultRouter()
@@ -29,4 +30,5 @@ urlpatterns = [
     path('reportes/institucion/<int:institucion_id>/', reporte_institucion, name='reporte-institucion'),
     path('reportes/ranking/', ranking_instituciones, name='ranking-instituciones'),
     path('reportes/comparativa/', comparativa_nutricional, name='comparativa-nutricional'),
+    path('reportes/instituciones-filtros/', instituciones_con_filtros, name='instituciones-filtros'),
 ]

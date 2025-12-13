@@ -149,46 +149,32 @@ export const VisitaDetallePage: React.FC = () => {
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* Header con gradiente */}
-      <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 text-white shadow-xl">
-        <div className="flex flex-col gap-4">
-          <div className="flex items-start gap-3 sm:gap-4 md:gap-6">
-            <div className="p-3 sm:p-4 md:p-5 bg-white/20 rounded-xl sm:rounded-2xl backdrop-blur-sm flex-shrink-0">
-              <span className="text-3xl sm:text-4xl md:text-5xl">🍽️</span>
+      <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl p-6 text-white shadow-xl">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4 flex-1">
+            <div className="p-4 bg-white/20 rounded-xl backdrop-blur-sm">
+              <span className="text-4xl">🍽️</span>
             </div>
-            <div className="flex-1 min-w-0">
-              <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mb-2 sm:mb-3 break-words">{visita?.institucion_nombre}</h1>
-              <div className="flex flex-wrap gap-2 sm:gap-3 md:gap-4 text-xs sm:text-sm md:text-base">
-                <span className="flex items-center gap-1 sm:gap-2 bg-white/10 px-2 sm:px-3 md:px-4 py-1 sm:py-2 rounded-lg backdrop-blur-sm">
-                  <svg className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  <span className="truncate">{visita?.fecha}</span>
-                </span>
-                <span className="flex items-center gap-1 sm:gap-2 bg-white/10 px-2 sm:px-3 md:px-4 py-1 sm:py-2 rounded-lg backdrop-blur-sm">
-                  <svg className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <span className="truncate">{visita?.tipo_comida}</span>
-                </span>
+            <div>
+              <h1 className="text-2xl font-bold mb-2">{visita?.institucion_nombre}</h1>
+              <div className="flex gap-3 text-sm">
+                <span className="bg-white/10 px-3 py-1 rounded-lg backdrop-blur-sm">📅 {visita?.fecha}</span>
+                <span className="bg-white/10 px-3 py-1 rounded-lg backdrop-blur-sm capitalize">🕐 {visita?.tipo_comida}</span>
               </div>
-              {visita?.observaciones && (
-                <p className="mt-3 sm:mt-4 text-blue-50 bg-white/10 rounded-lg p-3 sm:p-4 backdrop-blur-sm text-xs sm:text-sm md:text-base">{visita.observaciones}</p>
-              )}
             </div>
           </div>
-          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-            <Button onClick={() => navigate(`/visitas/${id}/formulario`)} className="bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-semibold shadow-lg text-sm sm:text-base">
-              <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              Completar Formulario
+          <div className="flex gap-2">
+            <Button onClick={() => navigate(`/visitas/${id}/formulario`)} className="bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-semibold">
+              📋 Formulario
             </Button>
-            <Button onClick={() => navigate('/visitas')} className="bg-white/20 hover:bg-white/30 backdrop-blur-sm border-white/30 text-white text-sm sm:text-base">
-              <ArrowLeftIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-              Volver
+            <Button onClick={() => navigate('/visitas')} className="bg-white/20 hover:bg-white/30 backdrop-blur-sm">
+              ← Volver
             </Button>
           </div>
         </div>
+        {visita?.observaciones && (
+          <p className="mt-4 text-blue-50 bg-white/10 rounded-lg p-3 backdrop-blur-sm text-sm">{visita.observaciones}</p>
+        )}
       </div>
 
       {/* Tabla de Platos */}
@@ -428,33 +414,332 @@ export const VisitaDetallePage: React.FC = () => {
       {/* Resumen del Formulario de Relevamiento */}
       {visita?.formulario_completado && (
         <Card className="overflow-hidden shadow-lg">
-          <div className="bg-gradient-to-r from-indigo-50 to-purple-50 px-8 py-6 border-b-2 border-indigo-200">
-            <h2 className="text-3xl font-bold text-gray-800 flex items-center gap-3">
-              <span className="text-4xl">📋</span> Formulario de Relevamiento
-            </h2>
-            <p className="text-base text-gray-600 mt-2 ml-1">Completado el {new Date().toLocaleDateString()}</p>
+          <div className="bg-gradient-to-r from-indigo-50 to-purple-50 px-6 py-4 border-b-2 border-indigo-200 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="text-3xl">📋</span>
+              <div>
+                <h2 className="text-2xl font-bold text-gray-800">Formulario de Relevamiento</h2>
+                <p className="text-sm text-gray-600">Completado el {new Date().toLocaleDateString()}</p>
+              </div>
+            </div>
           </div>
 
-          <div className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {Object.entries(visita.formulario_respuestas || {}).map(([seccion, respuestas]: [string, any]) => (
-                <div key={seccion} className="border rounded-lg p-4 bg-gray-50">
-                  <h3 className="font-bold text-lg text-indigo-700 mb-3 capitalize">
-                    {seccion.replace('_', ' ')}
-                  </h3>
-                  <div className="space-y-2">
-                    {Object.entries(respuestas).map(([pregunta, valor]: [string, any]) => (
-                      <div key={pregunta} className="flex justify-between items-center text-sm">
-                        <span className="text-gray-600 capitalize">{pregunta.replace('_', ' ')}:</span>
-                        <span className="font-semibold text-gray-900">
-                          {typeof valor === 'boolean' ? (valor ? '✓ Sí' : '✗ No') : valor}
-                        </span>
-                      </div>
-                    ))}
+          <div className="p-6 space-y-6">
+            {/* Sección 1: Prestación Observada */}
+            {visita.formulario_respuestas?.prestacion && (
+              <div className="border-2 border-indigo-200 rounded-lg overflow-hidden">
+                <div className="bg-indigo-100 px-4 py-3 border-b-2 border-indigo-200">
+                  <h3 className="font-bold text-lg text-indigo-900">1. Prestación Observada</h3>
+                </div>
+                <div className="p-4 bg-white space-y-3">
+                  {Object.entries(visita.formulario_respuestas.prestacion).map(([key, value]: [string, any]) => (
+                    <div key={key} className="flex justify-between items-start py-2 border-b border-gray-100 last:border-0">
+                      <span className="text-sm text-gray-600 font-medium capitalize flex-1">
+                        {key.replace(/_/g, ' ')}
+                      </span>
+                      <span className="text-sm font-semibold text-gray-900 text-right">
+                        {typeof value === 'boolean' ? (value ? '✅ Sí' : '❌ No') : value || '-'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Sección 2: Cantidad de raciones */}
+            {visita.formulario_respuestas?.cantidad && (
+              <div className="border-2 border-green-200 rounded-lg overflow-hidden">
+                <div className="bg-green-100 px-4 py-3 border-b-2 border-green-200">
+                  <h3 className="font-bold text-lg text-green-900">2. Cantidad de Raciones a Elaborar</h3>
+                </div>
+                <div className="p-4 bg-white">
+                  <div className="overflow-x-auto">
+                    <table className="w-full border-2 border-gray-300">
+                      <thead>
+                        <tr className="bg-gray-100">
+                          <th className="border border-gray-300 px-3 py-2 text-xs font-bold">Becados</th>
+                          <th className="border border-gray-300 px-3 py-2 text-xs font-bold">No Becados</th>
+                          <th className="border border-gray-300 px-3 py-2 text-xs font-bold">Presentes</th>
+                          <th className="border border-gray-300 px-3 py-2 text-xs font-bold">Docentes Autorizados</th>
+                          <th className="border border-gray-300 px-3 py-2 text-xs font-bold">Docentes No Autorizados</th>
+                          <th className="border border-gray-300 px-3 py-2 text-xs font-bold">Personal Cocina</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td className="border border-gray-300 px-3 py-2 text-center font-semibold">
+                            {visita.formulario_respuestas.cantidad.tabla_raciones_alumnos_becados || '-'}
+                          </td>
+                          <td className="border border-gray-300 px-3 py-2 text-center font-semibold">
+                            {visita.formulario_respuestas.cantidad.tabla_raciones_alumnos_no_becados || '-'}
+                          </td>
+                          <td className="border border-gray-300 px-3 py-2 text-center font-semibold">
+                            {visita.formulario_respuestas.cantidad.tabla_raciones_alumnos_presentes || '-'}
+                          </td>
+                          <td className="border border-gray-300 px-3 py-2 text-center font-semibold">
+                            {visita.formulario_respuestas.cantidad.tabla_raciones_docentes_autorizados || '-'}
+                          </td>
+                          <td className="border border-gray-300 px-3 py-2 text-center font-semibold">
+                            {visita.formulario_respuestas.cantidad.tabla_raciones_docentes_no_autorizados || '-'}
+                          </td>
+                          <td className="border border-gray-300 px-3 py-2 text-center font-semibold">
+                            {visita.formulario_respuestas.cantidad.tabla_raciones_personal_cocina || '-'}
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
                   </div>
                 </div>
-              ))}
-            </div>
+              </div>
+            )}
+
+            {/* Sección 3: Control de Temperaturas */}
+            {visita.formulario_respuestas?.temperaturas && platos.length > 0 && (
+              <div className="border-2 border-orange-200 rounded-lg overflow-hidden">
+                <div className="bg-orange-100 px-4 py-3 border-b-2 border-orange-200">
+                  <h3 className="font-bold text-lg text-orange-900">3. Control de Temperaturas</h3>
+                </div>
+                <div className="p-4 bg-white">
+                  <div className="overflow-x-auto">
+                    <table className="w-full border-2 border-gray-300">
+                      <thead>
+                        <tr className="bg-gray-100">
+                          <th className="border border-gray-300 px-4 py-2 font-bold">Alimento</th>
+                          <th className="border border-gray-300 px-4 py-2 font-bold">Temp. Conservación (°C)</th>
+                          <th className="border border-gray-300 px-4 py-2 font-bold">Temp. Cocción (°C)</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {platos.map((plato) => {
+                          const tempConservacion = visita.formulario_respuestas.temperaturas[`temp_conservacion_${plato.id}`]
+                          const tempCoccion = visita.formulario_respuestas.temperaturas[`temp_coccion_${plato.id}`]
+                          if (!tempConservacion && !tempCoccion) return null
+                          return (
+                            <tr key={plato.id}>
+                              <td className="border border-gray-300 px-4 py-2 font-medium">{plato.nombre}</td>
+                              <td className="border border-gray-300 px-4 py-2 text-center font-semibold text-blue-600">
+                                {tempConservacion || '-'}
+                              </td>
+                              <td className="border border-gray-300 px-4 py-2 text-center font-semibold text-red-600">
+                                {tempCoccion || '-'}
+                              </td>
+                            </tr>
+                          )
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Sección 6: Personal */}
+            {visita.formulario_respuestas?.personal && (
+              <div className="border-2 border-purple-200 rounded-lg overflow-hidden">
+                <div className="bg-purple-100 px-4 py-3 border-b-2 border-purple-200">
+                  <h3 className="font-bold text-lg text-purple-900">6. Personal</h3>
+                </div>
+                <div className="p-4 bg-white space-y-4">
+                  {/* Tabla de cantidad de personal */}
+                  <div>
+                    <h4 className="font-semibold text-gray-700 mb-2">6.1 - Cantidad de Personal</h4>
+                    <div className="overflow-x-auto">
+                      <table className="w-full border-2 border-gray-300">
+                        <thead>
+                          <tr className="bg-gray-100">
+                            <th className="border border-gray-300 px-4 py-2 font-bold">Cocinero/a</th>
+                            <th className="border border-gray-300 px-4 py-2 font-bold">Ayudantes</th>
+                            <th className="border border-gray-300 px-4 py-2 font-bold">Camareros/as</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td className="border border-gray-300 px-4 py-2 text-center font-semibold">
+                              {visita.formulario_respuestas.personal.tabla_personal_cocinero || '-'}
+                            </td>
+                            <td className="border border-gray-300 px-4 py-2 text-center font-semibold">
+                              {visita.formulario_respuestas.personal.tabla_personal_ayudantes || '-'}
+                            </td>
+                            <td className="border border-gray-300 px-4 py-2 text-center font-semibold">
+                              {visita.formulario_respuestas.personal.tabla_personal_camareros || '-'}
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  {/* Carnet de manipulador */}
+                  <div className="flex justify-between items-center py-2 border-t border-gray-200">
+                    <span className="text-sm font-medium text-gray-700">6.3 - Carnet de Manipulador de Alimentos</span>
+                    <span className="text-sm font-semibold">
+                      {visita.formulario_respuestas.personal.carnet_manipulador ? '✅ Sí' : '❌ No'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Sección 7: Equipamiento */}
+            {visita.formulario_respuestas?.equipamiento && (
+              <div className="border-2 border-blue-200 rounded-lg overflow-hidden">
+                <div className="bg-blue-100 px-4 py-3 border-b-2 border-blue-200">
+                  <h3 className="font-bold text-lg text-blue-900">7. Equipamiento</h3>
+                </div>
+                <div className="p-4 bg-white space-y-3">
+                  {Object.entries(visita.formulario_respuestas.equipamiento).map(([key, value]: [string, any]) => (
+                    <div key={key} className="flex justify-between items-start py-2 border-b border-gray-100 last:border-0">
+                      <span className="text-sm text-gray-600 font-medium capitalize flex-1">
+                        {key.replace(/_/g, ' ')}
+                      </span>
+                      <span className="text-sm font-semibold text-gray-900">
+                        {typeof value === 'boolean' ? (value ? '✅ Sí' : '❌ No') : value || '-'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Sección 8: Prácticas de Manipulación */}
+            {visita.formulario_respuestas?.practicas_manipulacion && (
+              <div className="border-2 border-yellow-200 rounded-lg overflow-hidden">
+                <div className="bg-yellow-100 px-4 py-3 border-b-2 border-yellow-200">
+                  <h3 className="font-bold text-lg text-yellow-900">8. Prácticas en la Manipulación de Alimentos</h3>
+                </div>
+                <div className="p-4 bg-white">
+                  <div className="overflow-x-auto">
+                    <table className="w-full border-2 border-gray-300">
+                      <thead>
+                        <tr className="bg-gray-100">
+                          <th className="border border-gray-300 px-4 py-2 text-left font-bold">Práctica</th>
+                          <th className="border border-gray-300 px-4 py-2 text-center font-bold">Observado</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {Object.entries(visita.formulario_respuestas.practicas_manipulacion)
+                          .filter(([key]) => key.startsWith('tabla_practicas_'))
+                          .map(([key, value]: [string, any]) => (
+                            <tr key={key}>
+                              <td className="border border-gray-300 px-4 py-2 text-sm">
+                                {key.replace('tabla_practicas_', '').replace(/_/g, ' ')}
+                              </td>
+                              <td className="border border-gray-300 px-4 py-2 text-center font-semibold">
+                                {value === 'si' ? '✅ Sí' : value === 'no' ? '❌ No' : '-'}
+                              </td>
+                            </tr>
+                          ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Sección 9: Higiene de Instalaciones */}
+            {visita.formulario_respuestas?.higiene_instalaciones && (
+              <div className="border-2 border-teal-200 rounded-lg overflow-hidden">
+                <div className="bg-teal-100 px-4 py-3 border-b-2 border-teal-200">
+                  <h3 className="font-bold text-lg text-teal-900">9. Higiene y Estado de Instalaciones</h3>
+                </div>
+                <div className="p-4 bg-white">
+                  <div className="overflow-x-auto">
+                    <table className="w-full border-2 border-gray-300">
+                      <thead>
+                        <tr className="bg-gray-100">
+                          <th className="border border-gray-300 px-4 py-2 text-left font-bold">Área</th>
+                          <th className="border border-gray-300 px-4 py-2 text-center font-bold">Higiene</th>
+                          <th className="border border-gray-300 px-4 py-2 text-center font-bold">Estado</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {['sector_cocina', 'sector_comedor', 'instalaciones_comedor', 'instalaciones_cocina', 'desagues', 'contenedores_isotermicos', 'bateria_cocina', 'deposito_viveres', 'equipos_refrigeracion', 'lugar_guardado_efectos'].map((area) => {
+                          const higiene = visita.formulario_respuestas.higiene_instalaciones[`tabla_higiene_higiene_${area}`]
+                          const estado = visita.formulario_respuestas.higiene_instalaciones[`tabla_higiene_estado_${area}`]
+                          if (!higiene && !estado) return null
+                          return (
+                            <tr key={area}>
+                              <td className="border border-gray-300 px-4 py-2 text-sm font-medium">
+                                {area.replace(/_/g, ' ')}
+                              </td>
+                              <td className="border border-gray-300 px-4 py-2 text-center font-semibold">
+                                {higiene === 'si' ? '✅' : higiene === 'no' ? '❌' : '-'}
+                              </td>
+                              <td className="border border-gray-300 px-4 py-2 text-center font-semibold">
+                                {estado === 'si' ? '✅' : estado === 'no' ? '❌' : '-'}
+                              </td>
+                            </tr>
+                          )
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Sección 10: Infraestructura */}
+            {visita.formulario_respuestas?.infraestructura && (
+              <div className="border-2 border-pink-200 rounded-lg overflow-hidden">
+                <div className="bg-pink-100 px-4 py-3 border-b-2 border-pink-200">
+                  <h3 className="font-bold text-lg text-pink-900">10. Infraestructura</h3>
+                </div>
+                <div className="p-4 bg-white space-y-3">
+                  {Object.entries(visita.formulario_respuestas.infraestructura).map(([key, value]: [string, any]) => (
+                    <div key={key} className="flex justify-between items-start py-2 border-b border-gray-100 last:border-0">
+                      <span className="text-sm text-gray-600 font-medium capitalize flex-1">
+                        {key.replace(/_/g, ' ')}
+                      </span>
+                      <span className="text-sm font-semibold text-gray-900">
+                        {typeof value === 'boolean' ? (value ? '✅ Sí' : '❌ No') : value || '-'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Sección 4: Higiene y Manipulación */}
+            {visita.formulario_respuestas?.higiene && (
+              <div className="border-2 border-red-200 rounded-lg overflow-hidden">
+                <div className="bg-red-100 px-4 py-3 border-b-2 border-red-200">
+                  <h3 className="font-bold text-lg text-red-900">4. Higiene y Manipulación</h3>
+                </div>
+                <div className="p-4 bg-white space-y-3">
+                  {Object.entries(visita.formulario_respuestas.higiene).map(([key, value]: [string, any]) => (
+                    <div key={key} className="flex justify-between items-start py-2 border-b border-gray-100 last:border-0">
+                      <span className="text-sm text-gray-600 font-medium capitalize flex-1">
+                        {key.replace(/_/g, ' ')}
+                      </span>
+                      <span className="text-sm font-semibold text-gray-900">
+                        {typeof value === 'boolean' ? (value ? '✅ Sí' : '❌ No') : value || '-'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Sección: Hábitos Higiénicos */}
+            {visita.formulario_respuestas?.habitos_higienicos && (
+              <div className="border-2 border-cyan-200 rounded-lg overflow-hidden">
+                <div className="bg-cyan-100 px-4 py-3 border-b-2 border-cyan-200">
+                  <h3 className="font-bold text-lg text-cyan-900">7. Hábitos Higiénicos</h3>
+                </div>
+                <div className="p-4 bg-white space-y-3">
+                  {Object.entries(visita.formulario_respuestas.habitos_higienicos).map(([key, value]: [string, any]) => (
+                    <div key={key} className="flex justify-between items-start py-2 border-b border-gray-100 last:border-0">
+                      <span className="text-sm text-gray-600 font-medium capitalize flex-1">
+                        {key.replace(/_/g, ' ')}
+                      </span>
+                      <span className="text-sm font-semibold text-gray-900">
+                        {typeof value === 'boolean' ? (value ? '✅ Sí' : '❌ No') : value || '-'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </Card>
       )}

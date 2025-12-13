@@ -126,6 +126,26 @@ def comparativa_nutricional(request):
     return Response(data)
 
 
+@api_view(['GET'])
+def instituciones_con_filtros(request):
+    """Instituciones que cumplen con filtros del formulario"""
+    fecha_inicio = request.query_params.get('fecha_inicio')
+    fecha_fin = request.query_params.get('fecha_fin')
+    
+    # Extraer filtros dinámicos
+    filtros = {}
+    for key, value in request.query_params.items():
+        if key.startswith('filtro_') and '_campo' in key:
+            index = key.split('_')[1]
+            campo = value
+            valor_key = f'filtro_{index}_valor'
+            if valor_key in request.query_params:
+                filtros[campo] = request.query_params[valor_key]
+    
+    data = ReportService.get_instituciones_con_filtros(fecha_inicio, fecha_fin, filtros)
+    return Response(data)
+
+
 class PlatoPlantillaViewSet(viewsets.ModelViewSet):
     queryset = PlatoPlantilla.objects.prefetch_related('ingredientes_plantilla__alimento').all()
     serializer_class = PlatoPlantillaSerializer
@@ -166,17 +186,20 @@ class PlatoPlantillaViewSet(viewsets.ModelViewSet):
             sodio_mg_total=plantilla.sodio_mg_total
         )
         
-        # Copiar ingredientes
-        for ing_plantilla in plantilla.ingredientes_plantilla.all():
-            IngredientePlato.objects.create(
+        # Copiar ingredientes con bulk_create (optimizado)
+        ingredientes_bulk = [
+            IngredientePlato(
                 plato=plato,
-                alimento=ing_plantilla.alimento,
-                cantidad=ing_plantilla.cantidad,
-                unidad=ing_plantilla.unidad,
-                orden=ing_plantilla.orden
+                alimento=ing.alimento,
+                cantidad=ing.cantidad,
+                unidad=ing.unidad,
+                orden=ing.orden
             )
+            for ing in plantilla.ingredientes_plantilla.all()
+        ]
+        IngredientePlato.objects.bulk_create(ingredientes_bulk)
         
-        # Recalcular por si acaso
+        # Recalcular aportes y totales
         for ing in plato.ingredientes.all():
             ing.recalcular_aporte(save=True)
         plato.recalcular_totales(save=True)
