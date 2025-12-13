@@ -80,8 +80,8 @@ export interface IngredientePlantilla {
 }
 
 export const auditoriaService = {
-  async getInstituciones(params?: { search?: string; tipo?: string }) {
-    const response = await apiClient.get<{ results: Institucion[] }>('/auditoria/instituciones/', { params })
+  async getInstituciones(params?: { search?: string; tipo?: string; page?: number; limit?: number }) {
+    const response = await apiClient.get<{ results: Institucion[]; count: number; next: string | null; previous: string | null }>('/auditoria/instituciones/', { params })
     return response.data
   },
 
@@ -104,8 +104,8 @@ export const auditoriaService = {
     await apiClient.delete(`/auditoria/instituciones/${id}/`)
   },
 
-  async getVisitas(params?: { institucion?: number; tipo_comida?: string; fecha?: string }) {
-    const response = await apiClient.get<{ results: VisitaAuditoria[] }>('/auditoria/visitas/', { params })
+  async getVisitas(params?: { institucion?: number; tipo_comida?: string; fecha?: string; page?: number; limit?: number }) {
+    const response = await apiClient.get<{ results: VisitaAuditoria[]; count: number; next: string | null; previous: string | null }>('/auditoria/visitas/', { params })
     return response.data
   },
 
