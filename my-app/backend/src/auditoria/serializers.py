@@ -40,7 +40,7 @@ class VisitaAuditoriaSerializer(serializers.ModelSerializer):
 
 class VisitaAuditoriaListSerializer(serializers.ModelSerializer):
     institucion_nombre = serializers.CharField(source='institucion.nombre', read_only=True)
-    cantidad_platos = serializers.IntegerField(source='platos.count', read_only=True)
+    cantidad_platos = serializers.IntegerField(read_only=True)  # Ya viene del annotate
     
     class Meta:
         model = VisitaAuditoria

@@ -4,6 +4,7 @@ import { PlusIcon, TrashIcon, ArrowLeftIcon } from '@heroicons/react/24/outline'
 import { useDebounce } from 'use-debounce'
 import { auditoriaService, PlatoObservado, IngredientePlato } from '../services/auditoriaService'
 import { nutricionService, AlimentoNutricional } from '../services/nutricionService'
+import { useInstitucionesStore } from '../store/institucionesStore'
 import { Modal } from '../components/ui/Modal'
 import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
@@ -22,6 +23,8 @@ export const VisitaDetallePage: React.FC = () => {
   const [alimentos, setAlimentos] = useState<AlimentoNutricional[]>([])
   const [searchAlimento, setSearchAlimento] = useState('')
   const [debouncedSearch] = useDebounce(searchAlimento, 300)
+  const [expandedPlatos, setExpandedPlatos] = useState<Set<number>>(new Set())
+  const { load: loadInstituciones } = useInstitucionesStore()
 
   const [platoForm, setPlatoForm] = useState({
     nombre: '',
@@ -38,7 +41,8 @@ export const VisitaDetallePage: React.FC = () => {
 
   useEffect(() => {
     loadVisita()
-  }, [id])
+    loadInstituciones() // Pre-cargar instituciones para modales
+  }, [id, loadInstituciones])
 
   useEffect(() => {
     if (debouncedSearch.length > 2) {
@@ -262,33 +266,52 @@ export const VisitaDetallePage: React.FC = () => {
                     <tr className="bg-gradient-to-r from-blue-50 to-purple-50 border-b-4 sm:border-b-8 border-indigo-300">
                       <td colSpan={6} className="px-3 sm:px-4 md:px-6 py-4 sm:py-6">
                         <div className="space-y-2 sm:space-y-3">
-                          <h4 className="font-semibold text-gray-700 flex items-center gap-2 text-sm sm:text-base">
-                            <span>🧂</span> Ingredientes:
-                          </h4>
-                          <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
-                            {plato.ingredientes.map((ing) => (
-                              <div key={ing.id} className="flex justify-between items-center bg-white p-3 rounded-lg border border-gray-200">
-                                <span className="text-sm font-medium text-gray-700">
-                                  {ing.alimento_nombre}
-                                </span>
-                                <div className="flex items-center gap-2">
-                                  <span className="text-sm text-gray-600 bg-gray-100 px-2 py-1 rounded">
-                                    {ing.cantidad}{ing.unidad}
-                                  </span>
-                                  <button
-                                    onClick={() => handleDeleteIngrediente(ing.id)}
-                                    className="text-red-500 hover:text-red-700"
-                                  >
-                                    <TrashIcon className="w-4 h-4" />
-                                  </button>
-                                </div>
-                              </div>
-                            ))}
+                          <div className="flex items-center justify-between">
+                            <h4 className="font-semibold text-gray-700 flex items-center gap-2 text-sm sm:text-base">
+                              <span>🧂</span> Ingredientes:
+                            </h4>
+                            <button
+                              onClick={() => {
+                                const newExpanded = new Set(expandedPlatos)
+                                if (expandedPlatos.has(plato.id)) {
+                                  newExpanded.delete(plato.id)
+                                } else {
+                                  newExpanded.add(plato.id)
+                                }
+                                setExpandedPlatos(newExpanded)
+                              }}
+                              className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                            >
+                              {expandedPlatos.has(plato.id) ? '▼ Ocultar' : '▶ Mostrar'}
+                            </button>
                           </div>
-                          <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-3 sm:p-4 rounded-lg border border-blue-200">
-                            <h5 className="font-semibold text-gray-800 mb-2 sm:mb-3 flex items-center gap-2 text-sm sm:text-base">
-                              <span>📊</span> Totales Nutricionales
-                            </h5>
+                          {expandedPlatos.has(plato.id) && (
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
+                              {plato.ingredientes.map((ing) => (
+                                <div key={ing.id} className="flex justify-between items-center bg-white p-3 rounded-lg border border-gray-200">
+                                  <span className="text-sm font-medium text-gray-700">
+                                    {ing.alimento_nombre}
+                                  </span>
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-sm text-gray-600 bg-gray-100 px-2 py-1 rounded">
+                                      {ing.cantidad}{ing.unidad}
+                                    </span>
+                                    <button
+                                      onClick={() => handleDeleteIngrediente(ing.id)}
+                                      className="text-red-500 hover:text-red-700"
+                                    >
+                                      <TrashIcon className="w-4 h-4" />
+                                    </button>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          {expandedPlatos.has(plato.id) && (
+                            <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-3 sm:p-4 rounded-lg border border-blue-200">
+                              <h5 className="font-semibold text-gray-800 mb-2 sm:mb-3 flex items-center gap-2 text-sm sm:text-base">
+                                <span>📊</span> Totales Nutricionales
+                              </h5>
                             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3">
                               {/* Campos comunes */}
                               <div className="bg-white p-2 rounded text-center">
@@ -397,8 +420,9 @@ export const VisitaDetallePage: React.FC = () => {
                                   <div className="text-xs text-gray-500">g</div>
                                 </div>
                               )}
+                              </div>
                             </div>
-                          </div>
+                          )}
                         </div>
                       </td>
                     </tr>

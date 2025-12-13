@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useDebounce } from 'use-debounce'
 import { Card } from '../components/ui/Card'
 import axios from 'axios'
 
@@ -25,6 +26,7 @@ export function AlimentosPage() {
   const [categorias, setCategorias] = useState<Categoria[]>([])
   const [showForm, setShowForm] = useState(false)
   const [search, setSearch] = useState('')
+  const [debouncedSearch] = useDebounce(search, 500)
   const [loading, setLoading] = useState(true)
   const [editingId, setEditingId] = useState<number | null>(null)
   const [formData, setFormData] = useState<any>({
@@ -199,8 +201,8 @@ export function AlimentosPage() {
   }
 
   const filtered = alimentos.filter(a => 
-    a.nombre.toLowerCase().includes(search.toLowerCase()) ||
-    a.codigo_argenfood.toString().includes(search)
+    a.nombre.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+    a.codigo_argenfood.toString().includes(debouncedSearch)
   )
 
   return (

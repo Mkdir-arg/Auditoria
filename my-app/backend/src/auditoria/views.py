@@ -4,6 +4,8 @@ from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
 from django.core.cache import cache
+from django.db.models import Count
+from django.db import transaction
 from .models import Institucion, VisitaAuditoria, PlatoObservado, IngredientePlato, PlatoPlantilla, IngredientePlantilla
 from .serializers import (
     InstitucionSerializer,
@@ -26,11 +28,23 @@ class InstitucionViewSet(viewsets.ModelViewSet):
 
 
 class VisitaAuditoriaViewSet(viewsets.ModelViewSet):
-    queryset = VisitaAuditoria.objects.select_related('institucion').prefetch_related('platos').all()
+    queryset = VisitaAuditoria.objects.select_related('institucion').all()
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ['institucion', 'tipo_comida', 'fecha']
     ordering_fields = ['fecha']
     ordering = ['-fecha']
+
+    def get_queryset(self):
+        queryset = VisitaAuditoria.objects.select_related('institucion')
+        
+        if self.action == 'list':
+            return queryset.annotate(
+                cantidad_platos=Count('platos')
+            )
+        
+        return queryset.prefetch_related(
+            'platos__ingredientes__alimento'
+        )
 
     def get_serializer_class(self):
         if self.action == 'list':
@@ -59,22 +73,37 @@ class IngredientePlatoViewSet(viewsets.ModelViewSet):
     filterset_fields = ['plato']
 
     def perform_create(self, serializer):
-        ingrediente = serializer.save()
-        ingrediente.recalcular_aporte(save=True)
-        ingrediente.plato.recalcular_totales(save=True)
-        # Invalidar caché del dashboard
+        with transaction.atomic():
+            ingrediente = serializer.save()
+            ingrediente.recalcular_aporte(save=False)
+            
+            plato = ingrediente.plato
+            plato.recalcular_totales(save=False)
+            
+            ingrediente.save()
+            plato.save()
+        
         cache.delete('dashboard_stats')
 
     def perform_update(self, serializer):
-        ingrediente = serializer.save()
-        ingrediente.recalcular_aporte(save=True)
-        ingrediente.plato.recalcular_totales(save=True)
+        with transaction.atomic():
+            ingrediente = serializer.save()
+            ingrediente.recalcular_aporte(save=False)
+            
+            plato = ingrediente.plato
+            plato.recalcular_totales(save=False)
+            
+            ingrediente.save()
+            plato.save()
+        
         cache.delete('dashboard_stats')
 
     def perform_destroy(self, instance):
-        plato = instance.plato
-        instance.delete()
-        plato.recalcular_totales(save=True)
+        with transaction.atomic():
+            plato = instance.plato
+            instance.delete()
+            plato.recalcular_totales(save=True)
+        
         cache.delete('dashboard_stats')
 
 

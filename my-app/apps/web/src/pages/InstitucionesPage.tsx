@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useDebounce } from 'use-debounce'
 import { PlusIcon, PencilIcon, TrashIcon, EyeIcon } from '@heroicons/react/24/outline'
 import { auditoriaService, Institucion } from '../services/auditoriaService'
 import { Modal } from '../components/ui/Modal'
@@ -15,6 +16,11 @@ export const InstitucionesPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingId, setEditingId] = useState<number | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
+  const [debouncedSearch] = useDebounce(searchTerm, 500)
+  const [page, setPage] = useState(1)
+  const [hasMore, setHasMore] = useState(true)
+  const [totalCount, setTotalCount] = useState(0)
+  const ITEMS_PER_PAGE = 12
   const [formData, setFormData] = useState<Partial<Institucion>>({
     codigo: '',
     nombre: '',
@@ -26,18 +32,41 @@ export const InstitucionesPage: React.FC = () => {
   })
 
   useEffect(() => {
-    loadInstituciones()
-  }, [searchTerm])
+    setPage(1)
+    setInstituciones([])
+    loadInstituciones(true)
+  }, [debouncedSearch])
 
-  const loadInstituciones = async () => {
+  const loadInstituciones = async (reset = false) => {
     try {
       setLoading(true)
-      const data = await auditoriaService.getInstituciones({ search: searchTerm })
-      setInstituciones(data.results)
+      const currentPage = reset ? 1 : page
+      const data = await auditoriaService.getInstituciones({ 
+        search: debouncedSearch,
+        page: currentPage,
+        limit: ITEMS_PER_PAGE
+      })
+      
+      if (reset) {
+        setInstituciones(data.results)
+        setPage(2)
+      } else {
+        setInstituciones(prev => [...prev, ...data.results])
+        setPage(prev => prev + 1)
+      }
+      
+      setHasMore(data.next !== null)
+      setTotalCount(data.count || data.results.length)
     } catch (error) {
       console.error('Error loading instituciones:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const loadMore = () => {
+    if (!loading && hasMore) {
+      loadInstituciones()
     }
   }
 
@@ -51,7 +80,9 @@ export const InstitucionesPage: React.FC = () => {
       }
       setIsModalOpen(false)
       resetForm()
-      loadInstituciones()
+      setPage(1)
+      setInstituciones([])
+      loadInstituciones(true)
     } catch (error) {
       console.error('Error saving institucion:', error)
     }
@@ -67,7 +98,9 @@ export const InstitucionesPage: React.FC = () => {
     if (confirm('¿Está seguro de eliminar esta institución?')) {
       try {
         await auditoriaService.deleteInstitucion(id)
-        loadInstituciones()
+        setPage(1)
+        setInstituciones([])
+        loadInstituciones(true)
       } catch (error) {
         console.error('Error deleting institucion:', error)
       }
@@ -124,7 +157,10 @@ export const InstitucionesPage: React.FC = () => {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-1 sm:mb-2">🏫 Instituciones</h1>
-            <p className="text-indigo-100 text-sm sm:text-base md:text-lg">{instituciones.length} instituciones registradas</p>
+            <p className="text-indigo-100 text-sm sm:text-base md:text-lg">
+              {totalCount > 0 ? `${totalCount} instituciones registradas` : 'Instituciones registradas'}
+              {debouncedSearch && ` (filtradas por "${debouncedSearch}")`}
+            </p>
           </div>
           <button
             onClick={() => {
@@ -249,6 +285,26 @@ export const InstitucionesPage: React.FC = () => {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Botón Cargar Más */}
+      {!loading && hasMore && instituciones.length > 0 && (
+        <div className="text-center py-6">
+          <button
+            onClick={loadMore}
+            className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all font-medium shadow-md hover:shadow-lg"
+          >
+            Cargar más instituciones
+          </button>
+        </div>
+      )}
+
+      {/* Indicador de carga */}
+      {loading && instituciones.length > 0 && (
+        <div className="text-center py-6">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+          <p className="mt-2 text-gray-600">Cargando más...</p>
         </div>
       )}
 

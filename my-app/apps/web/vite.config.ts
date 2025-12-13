@@ -13,4 +13,23 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor': ['react', 'react-dom', 'react-router-dom'],
+          'ui': ['@heroicons/react'],
+          'utils': ['axios', 'use-debounce']
+        }
+      }
+    },
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,  // Remove console.log in production
+        drop_debugger: true
+      }
+    },
+    chunkSizeWarningLimit: 1000
+  }
 })

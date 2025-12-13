@@ -107,6 +107,9 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+    ],
     'DEFAULT_THROTTLE_CLASSES': [
         'rest_framework.throttling.AnonRateThrottle',
         'rest_framework.throttling.UserRateThrottle'
@@ -116,7 +119,8 @@ REST_FRAMEWORK = {
         'user': '1000/hour',
         'reports': '50/hour',
         'bulk': '20/hour',
-    }
+    },
+    'COMPACT_JSON': True,  # Remove spaces in JSON
 }
 
 from datetime import timedelta
