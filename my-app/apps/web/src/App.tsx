@@ -1,7 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
-import axios from 'axios'
+import { useEffect } from 'react'
 import { Card } from './components/Card'
 import { Button } from './components/Button'
+import Logger from './utils/logger'
+import axios from './utils/api-interceptor'
+import { usePerformanceLogger } from './hooks/usePerformanceLogger'
 
 interface Item {
   id: number
@@ -21,6 +24,47 @@ function App() {
     queryFn: fetchItems,
   })
 
+  // Hook para logging de performance
+  usePerformanceLogger()
+
+  useEffect(() => {
+    // Log inicial de la aplicación
+    Logger.info('Aplicación iniciada', {
+      userAgent: navigator.userAgent,
+      url: window.location.href,
+      timestamp: new Date().toISOString()
+    })
+
+    // Log de navegación
+    const handleNavigation = () => {
+      Logger.info('Navegación detectada', {
+        url: window.location.href,
+        referrer: document.referrer
+      })
+    }
+
+    window.addEventListener('popstate', handleNavigation)
+    return () => window.removeEventListener('popstate', handleNavigation)
+  }, [])
+
+  useEffect(() => {
+    if (items) {
+      Logger.info('Datos cargados exitosamente', {
+        itemCount: items.length,
+        action: 'data_loaded'
+      })
+    }
+  }, [items])
+
+  useEffect(() => {
+    if (error) {
+      Logger.error('Error al cargar datos', {
+        error: error,
+        action: 'data_load_failed'
+      })
+    }
+  }, [error])
+
   if (isLoading) return <div className="p-8">Cargando...</div>
   if (error) return <div className="p-8 text-red-500">Error al cargar datos</div>
 
@@ -30,7 +74,16 @@ function App() {
         <h1 className="text-3xl font-bold text-gray-900 mb-8">Auditoria</h1>
         
         <div className="mb-6">
-          <Button>Nuevo Item</Button>
+          <Button 
+            onClick={() => {
+              Logger.userAction('Botón clickeado', 'nuevo-item', {
+                action: 'button_click',
+                buttonText: 'Nuevo Item'
+              })
+            }}
+          >
+            Nuevo Item
+          </Button>
         </div>
 
         <div className="grid gap-4">

@@ -28,8 +28,19 @@ docker-compose exec backend python manage.py migrate
 docker-compose exec backend python manage.py createsuperuser
 ```
 
+### Logging Avanzado (Opcional)
+```bash
+# Para habilitar stack de observabilidad completo
+start-logging.bat
+```
+
 ## URLs
 
 - **Frontend**: http://localhost:3001
 - **Backend API**: http://localhost:8000/api/
 - **Admin Django**: http://localhost:8000/admin/
+
+### Logging Avanzado (Opcional)
+- **Kibana**: http://localhost:5601
+- **Grafana**: http://localhost:3002 (admin/admin123)
+- **Jaeger**: http://localhost:16686

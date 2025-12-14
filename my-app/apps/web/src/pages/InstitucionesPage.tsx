@@ -8,11 +8,21 @@ import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
 import { Select } from '../components/ui/Select'
 import { Card } from '../components/ui/Card'
+import Logger from '../utils/logger'
 
 export const InstitucionesPage: React.FC = () => {
   const navigate = useNavigate()
   const [instituciones, setInstituciones] = useState<Institucion[]>([])
   const [loading, setLoading] = useState(true)
+  
+  // Log inicial de la página
+  useEffect(() => {
+    Logger.info('Página de instituciones cargada', {
+      action: 'page_loaded',
+      page: 'instituciones',
+      url: window.location.href
+    })
+  }, [])
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingId, setEditingId] = useState<number | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
@@ -32,6 +42,12 @@ export const InstitucionesPage: React.FC = () => {
   })
 
   useEffect(() => {
+    if (debouncedSearch) {
+      Logger.userAction('Búsqueda de instituciones', 'search-input', {
+        action: 'institucion_search',
+        searchTerm: debouncedSearch
+      })
+    }
     setPage(1)
     setInstituciones([])
     loadInstituciones(true)
@@ -47,6 +63,15 @@ export const InstitucionesPage: React.FC = () => {
         limit: ITEMS_PER_PAGE
       })
       
+      Logger.info('Instituciones cargadas', {
+        action: 'instituciones_loaded',
+        page: currentPage,
+        count: data.results.length,
+        total: data.count,
+        searchTerm: debouncedSearch || null,
+        reset: reset
+      })
+      
       if (reset) {
         setInstituciones(data.results)
         setPage(2)
@@ -58,6 +83,11 @@ export const InstitucionesPage: React.FC = () => {
       setHasMore(data.next !== null)
       setTotalCount(data.count || data.results.length)
     } catch (error) {
+      Logger.error('Error al cargar instituciones', {
+        action: 'instituciones_load_error',
+        page: reset ? 1 : page,
+        error: error
+      })
       console.error('Error loading instituciones:', error)
     } finally {
       setLoading(false)
@@ -75,8 +105,20 @@ export const InstitucionesPage: React.FC = () => {
     try {
       if (editingId) {
         await auditoriaService.updateInstitucion(editingId, formData)
+        Logger.info('Institución actualizada', {
+          action: 'institucion_updated',
+          institucionId: editingId,
+          nombre: formData.nombre,
+          tipo: formData.tipo
+        })
       } else {
-        await auditoriaService.createInstitucion(formData)
+        const newInst = await auditoriaService.createInstitucion(formData)
+        Logger.info('Nueva institución creada', {
+          action: 'institucion_created',
+          institucionId: newInst.id,
+          nombre: formData.nombre,
+          tipo: formData.tipo
+        })
       }
       setIsModalOpen(false)
       resetForm()
@@ -84,26 +126,59 @@ export const InstitucionesPage: React.FC = () => {
       setInstituciones([])
       loadInstituciones(true)
     } catch (error) {
+      Logger.error('Error al guardar institución', {
+        action: 'institucion_save_error',
+        error: error,
+        formData: formData
+      })
       console.error('Error saving institucion:', error)
     }
   }
 
   const handleEdit = (institucion: Institucion) => {
+    Logger.userAction('Editar institución iniciado', 'edit-button', {
+      action: 'institucion_edit_start',
+      institucionId: institucion.id,
+      nombre: institucion.nombre
+    })
     setEditingId(institucion.id)
     setFormData(institucion)
     setIsModalOpen(true)
   }
 
   const handleDelete = async (id: number) => {
+    const institucion = instituciones.find(inst => inst.id === id)
+    Logger.userAction('Intento de eliminar institución', 'delete-button', {
+      action: 'institucion_delete_attempt',
+      institucionId: id,
+      nombre: institucion?.nombre
+    })
+    
     if (confirm('¿Está seguro de eliminar esta institución?')) {
       try {
         await auditoriaService.deleteInstitucion(id)
+        Logger.info('Institución eliminada exitosamente', {
+          action: 'institucion_deleted',
+          institucionId: id,
+          nombre: institucion?.nombre,
+          tipo: institucion?.tipo
+        })
         setPage(1)
         setInstituciones([])
         loadInstituciones(true)
       } catch (error) {
+        Logger.error('Error al eliminar institución', {
+          action: 'institucion_delete_error',
+          institucionId: id,
+          error: error
+        })
         console.error('Error deleting institucion:', error)
       }
+    } else {
+      Logger.info('Eliminación de institución cancelada', {
+        action: 'institucion_delete_cancelled',
+        institucionId: id
+      })
     }
   }
 
@@ -262,7 +337,15 @@ export const InstitucionesPage: React.FC = () => {
               {/* Acciones */}
               <div className="px-4 sm:px-6 pb-4 sm:pb-6 flex flex-col sm:flex-row gap-2">
                 <button
-                  onClick={() => navigate(`/instituciones/${inst.id}`)}
+                  onClick={() => {
+                    Logger.userAction('Navegar a detalle de institución', 'view-detail-button', {
+                      action: 'institucion_view_detail',
+                      institucionId: inst.id,
+                      nombre: inst.nombre,
+                      tipo: inst.tipo
+                    })
+                    navigate(`/instituciones/${inst.id}`)
+                  }}
                   className="flex-1 flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all font-medium shadow-md hover:shadow-lg text-sm sm:text-base"
                 >
                   <EyeIcon className="w-4 h-4" />
