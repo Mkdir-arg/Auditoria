@@ -147,7 +147,7 @@ export function LoginPage() {
 
           {/* Footer */}
           <p className="text-center text-xs sm:text-sm text-gray-600 mt-6 sm:mt-8">
-            Sistema de Auditoría Nutricional © 2024
+            Sistema de Auditoría Nutricional 
           </p>
         </div>
       </div>

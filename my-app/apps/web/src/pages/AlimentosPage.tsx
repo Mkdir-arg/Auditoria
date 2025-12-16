@@ -259,7 +259,7 @@ export function AlimentosPage() {
                 required
               />
             </div>
-            <h4 className="font-semibold text-gray-700 mt-4 mb-2">Campos Comunes</h4>
+            <h4 className="font-semibold text-gray-700 mt-4 mb-2">Energia Y Macro nutriente</h4>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Energía (kcal)</label>
