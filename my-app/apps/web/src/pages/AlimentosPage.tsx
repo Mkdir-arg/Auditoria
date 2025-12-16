@@ -105,7 +105,7 @@ export function AlimentosPage() {
 
   const fetchAlimentos = async () => {
     try {
-      const res = await axios.get('http://localhost:8000/api/nutricion/alimentos/')
+      const res = await axios.get('http://localhost:8000/api/nutricion/alimentos/?limit=100')
       setAlimentos(res.data.results || res.data)
     } catch (error) {
       console.error('Error cargando alimentos:', error)
@@ -116,7 +116,7 @@ export function AlimentosPage() {
 
   const fetchCategorias = async () => {
     try {
-      const res = await axios.get('http://localhost:8000/api/nutricion/categorias/')
+      const res = await axios.get('http://localhost:8000/api/nutricion/categorias/?limit=100')
       setCategorias(res.data.results || res.data)
     } catch (error) {
       console.error('Error:', error)

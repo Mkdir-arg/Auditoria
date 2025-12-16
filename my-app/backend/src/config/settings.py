@@ -110,17 +110,16 @@ REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
     ],
-    'DEFAULT_THROTTLE_CLASSES': [
-        'rest_framework.throttling.AnonRateThrottle',
-        'rest_framework.throttling.UserRateThrottle'
-    ],
+    'DEFAULT_THROTTLE_CLASSES': [],
     'DEFAULT_THROTTLE_RATES': {
-        'anon': '100/hour',
-        'user': '1000/hour',
-        'reports': '50/hour',
-        'bulk': '20/hour',
+        'anon': '10000/hour',
+        'user': '10000/hour',
+        'reports': '1000/hour',
+        'bulk': '500/hour',
     },
-    'COMPACT_JSON': True,  # Remove spaces in JSON
+    'COMPACT_JSON': True,
+    'EXCEPTION_HANDLER': 'rest_framework.views.exception_handler',
+    'NON_FIELD_ERRORS_KEY': 'error',
 }
 
 from datetime import timedelta

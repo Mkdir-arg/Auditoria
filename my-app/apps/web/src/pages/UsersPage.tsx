@@ -24,7 +24,7 @@ interface UserForm {
 }
 
 const userService = {
-  getUsers: () => apiClient.get('/users/').then(res => res.data),
+  getUsers: () => apiClient.get('/users/?limit=100').then(res => res.data.results || res.data),
   createUser: (data: UserForm) => apiClient.post('/users/', data).then(res => res.data),
   updateUser: (id: number, data: Partial<UserForm>) => apiClient.put(`/users/${id}/`, data).then(res => res.data),
   deleteUser: (id: number) => apiClient.delete(`/users/${id}/`),

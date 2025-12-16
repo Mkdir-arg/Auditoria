@@ -21,7 +21,7 @@ export function CategoriasPage() {
 
   const fetchCategorias = async () => {
     try {
-      const res = await axios.get('http://localhost:8000/api/nutricion/categorias/')
+      const res = await axios.get('http://localhost:8000/api/nutricion/categorias/?limit=100')
       setCategorias(res.data.results || res.data)
     } catch (error) {
       console.error('Error cargando categorías:', error)

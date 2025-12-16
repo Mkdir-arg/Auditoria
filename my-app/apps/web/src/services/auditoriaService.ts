@@ -177,7 +177,7 @@ export const auditoriaService = {
   },
 
   async getPlatosPlantilla(params?: { search?: string; tipo_plato?: string; activo?: boolean }) {
-    const response = await apiClient.get<{ results: PlatoPlantilla[] }>('/auditoria/platos-plantilla/', { params })
+    const response = await apiClient.get<{ results: PlatoPlantilla[] }>('/auditoria/platos-plantilla/', { params: { ...params, limit: 100 } })
     return response.data
   },
 
