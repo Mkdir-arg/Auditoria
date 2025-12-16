@@ -58,13 +58,14 @@ class SyncService {
 
     for (const inst of institucionesNoSync) {
       try {
+        const instData: any = inst
         const response = await apiClient.post('/auditoria/instituciones/', {
-          codigo: inst.codigo,
-          nombre: inst.nombre,
-          tipo: inst.tipo,
-          direccion: inst.direccion,
-          barrio: inst.barrio,
-          comuna: inst.comuna,
+          codigo: instData.codigo,
+          nombre: instData.nombre,
+          tipo: instData.tipo,
+          direccion: instData.direccion,
+          barrio: instData.barrio,
+          comuna: instData.comuna,
         })
         
         await database.write(async () => {
@@ -85,13 +86,14 @@ class SyncService {
 
     for (const visita of visitasNoSync) {
       try {
-        const institucion = await visita.institucion.fetch()
+        const visitaData: any = visita
+        const institucion: any = await visitaData.institucion.fetch()
         const response = await apiClient.post('/auditoria/visitas/', {
           institucion: institucion.serverId,
-          fecha: new Date(visita.fecha).toISOString().split('T')[0],
-          tipo_comida: visita.tipoComida,
-          observaciones: visita.observaciones,
-          formulario_respuestas: visita.formularioRespuestas,
+          fecha: new Date(visitaData.fecha).toISOString().split('T')[0],
+          tipo_comida: visitaData.tipoComida,
+          observaciones: visitaData.observaciones,
+          formulario_respuestas: visitaData.formularioRespuestas,
         })
         
         await database.write(async () => {
@@ -128,7 +130,7 @@ class SyncService {
             })
           })
 
-          await this.syncIngredientesDeP lato(plato, response.data.id)
+          await this.syncIngredientesDePlato(plato, response.data.id)
         } catch (error) {
           console.error('Error sync plato:', error)
         }
@@ -136,7 +138,7 @@ class SyncService {
     }
   }
 
-  private async syncIngredientesDeP lato(plato: any, platoServerId: number) {
+  private async syncIngredientesDePlato(plato: any, platoServerId: number) {
     const ingredientes = await plato.ingredientes.fetch()
     
     for (const ing of ingredientes) {

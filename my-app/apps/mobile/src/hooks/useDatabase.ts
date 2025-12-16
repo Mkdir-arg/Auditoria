@@ -90,7 +90,7 @@ export const useDatabase = () => {
 
   // Ingredientes
   const createIngrediente = async (data: any) => {
-    const alimento = await database.get('alimentos').find(data.alimentoId)
+    const alimento: any = await database.get('alimentos').find(data.alimentoId)
     const factor = data.cantidad / 100
 
     return await database.write(async () => {
@@ -114,7 +114,7 @@ export const useDatabase = () => {
   }
 
   const recalcularTotalesPlato = async (platoId: string) => {
-    const plato = await database.get('platos').find(platoId)
+    const plato: any = await database.get('platos').find(platoId)
     const ingredientes = await plato.ingredientes.fetch()
 
     let totalEnergia = 0

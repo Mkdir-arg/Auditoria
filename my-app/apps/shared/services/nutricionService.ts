@@ -3,22 +3,22 @@ import { CategoriaAlimento, AlimentoNutricional } from '../types'
 export const createNutricionService = (apiClient: any) => ({
   // Categorías
   async getCategorias(params?: { search?: string }) {
-    const response = await apiClient.get<{ results: CategoriaAlimento[] }>('/nutricion/categorias/', { params })
+    const response = await apiClient.get('/nutricion/categorias/', { params })
     return response.data
   },
 
   async getCategoria(id: number) {
-    const response = await apiClient.get<CategoriaAlimento>(`/nutricion/categorias/${id}/`)
+    const response = await apiClient.get(`/nutricion/categorias/${id}/`)
     return response.data
   },
 
   async createCategoria(data: Partial<CategoriaAlimento>) {
-    const response = await apiClient.post<CategoriaAlimento>('/nutricion/categorias/', data)
+    const response = await apiClient.post('/nutricion/categorias/', data)
     return response.data
   },
 
   async updateCategoria(id: number, data: Partial<CategoriaAlimento>) {
-    const response = await apiClient.put<CategoriaAlimento>(`/nutricion/categorias/${id}/`, data)
+    const response = await apiClient.put(`/nutricion/categorias/${id}/`, data)
     return response.data
   },
 
@@ -28,22 +28,22 @@ export const createNutricionService = (apiClient: any) => ({
 
   // Alimentos
   async getAlimentos(params?: { search?: string; categoria?: number }) {
-    const response = await apiClient.get<{ results: AlimentoNutricional[] }>('/nutricion/alimentos/', { params })
+    const response = await apiClient.get('/nutricion/alimentos/', { params })
     return response.data
   },
 
   async getAlimento(id: number) {
-    const response = await apiClient.get<AlimentoNutricional>(`/nutricion/alimentos/${id}/`)
+    const response = await apiClient.get(`/nutricion/alimentos/${id}/`)
     return response.data
   },
 
   async createAlimento(data: Partial<AlimentoNutricional>) {
-    const response = await apiClient.post<AlimentoNutricional>('/nutricion/alimentos/', data)
+    const response = await apiClient.post('/nutricion/alimentos/', data)
     return response.data
   },
 
   async updateAlimento(id: number, data: Partial<AlimentoNutricional>) {
-    const response = await apiClient.put<AlimentoNutricional>(`/nutricion/alimentos/${id}/`, data)
+    const response = await apiClient.put(`/nutricion/alimentos/${id}/`, data)
     return response.data
   },
 

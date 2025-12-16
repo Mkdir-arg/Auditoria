@@ -26,11 +26,14 @@
     "expo-secure-store": "~12.3.1",
     "@nozbe/watermelondb": "^0.27.0",
     "@nozbe/with-observables": "^1.6.0",
-    "zustand": "^4.4.0"
+    "zustand": "^4.4.0",
+    "@react-native-community/netinfo": "9.3.10"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
+    "@babel/plugin-transform-class-properties": "^7.23.0",
     "@babel/plugin-transform-private-methods": "^7.23.0",
+    "@babel/plugin-transform-private-property-in-object": "^7.23.0",
     "@types/react": "~18.2.14",
     "typescript": "^5.1.3"
   },

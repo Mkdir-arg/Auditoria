@@ -22,4 +22,9 @@ export const reportesService = {
     })
     return response.data
   },
+
+  async getReporteInstitucion(id: number) {
+    const response = await apiClient.get(`/auditoria/reportes/instituciones/${id}/`)
+    return response.data
+  },
 }
