@@ -11,7 +11,7 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useOfflineSync } from '../hooks/useOfflineSync';
 
-const API_URL = 'http://192.168.1.205:8000/api';
+const API_URL = 'http://192.168.1.2:8000/api';
 
 export function LoginScreen({ navigation }: any) {
   const [username, setUsername] = useState('');

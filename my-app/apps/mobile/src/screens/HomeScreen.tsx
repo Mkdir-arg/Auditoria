@@ -12,7 +12,7 @@ import { storageService } from '../services/storageService';
 import { useOfflineSync } from '../hooks/useOfflineSync';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const API_URL = 'http://192.168.1.205:8000/api';
+const API_URL = 'http://192.168.1.2:8000/api';
 
 export function HomeScreen({ navigation }: any) {
   const [instituciones, setInstituciones] = useState<any[]>([]);

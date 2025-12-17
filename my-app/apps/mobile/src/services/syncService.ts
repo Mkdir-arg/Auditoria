@@ -71,7 +71,7 @@ class SyncService {
   }
 
   private async syncOperation(op: SyncOperation) {
-    const baseUrl = 'http://192.168.1.205:8000/api';
+    const baseUrl = 'http://192.168.1.2:8000/api';
     const AsyncStorage = require('@react-native-async-storage/async-storage').default;
     
     let url = `${baseUrl}/auditoria/${op.entity}/`;
