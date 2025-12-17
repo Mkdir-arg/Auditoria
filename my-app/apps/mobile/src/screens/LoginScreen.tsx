@@ -32,13 +32,13 @@ export function LoginScreen({ navigation }: any) {
     setError('');
 
     try {
-      const response = await axios.post(`${API_URL}/auth/login/`, {
+      const response = await axios.post(`${API_URL}/token/`, {
         username,
         password,
       });
 
       await AsyncStorage.setItem('@auth_token', response.data.access);
-      await AsyncStorage.setItem('@user_data', JSON.stringify(response.data.user));
+      await AsyncStorage.setItem('@refresh_token', response.data.refresh);
 
       navigation.replace('Home');
     } catch (err: any) {
