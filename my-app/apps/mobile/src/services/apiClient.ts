@@ -2,7 +2,7 @@ import axios from 'axios'
 import { useAuthStore } from '../store/authStore'
 
 const apiClient = axios.create({
-  baseURL: __DEV__ ? 'http://10.0.2.2:8000/api' : 'https://your-production-api.com/api',
+  baseURL: 'http://10.0.2.2:8000/api',
 })
 
 apiClient.interceptors.request.use((config) => {
