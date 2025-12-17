@@ -6,8 +6,11 @@ export const authService = {
     return response.data
   },
 
-  async getMe() {
-    const response = await apiClient.get('/me/')
+  async getMe(accessToken?: string) {
+    const response = await apiClient.get(
+      '/me/',
+      accessToken ? { headers: { Authorization: `Bearer ${accessToken}` } } : undefined
+    )
     return response.data
   },
 

@@ -1,5 +1,4 @@
 import apiClient from './apiClient'
-import { createReportesService } from '../../../shared/services/reportesService'
 
 export interface DashboardStats {
   total_instituciones: number
@@ -7,8 +6,6 @@ export interface DashboardStats {
   total_platos: number
   visitas_por_tipo: { tipo_comida: string; count: number }[]
 }
-
-const sharedReportesService = createReportesService(apiClient)
 
 export const reportesService = {
   async getDashboardStats() {
@@ -24,7 +21,7 @@ export const reportesService = {
   },
 
   async getReporteInstitucion(id: number) {
-    const response = await apiClient.get(`/auditoria/reportes/instituciones/${id}/`)
+    const response = await apiClient.get(`/auditoria/reportes/institucion/${id}/`)
     return response.data
   },
 }

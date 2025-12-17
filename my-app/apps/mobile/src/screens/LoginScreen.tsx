@@ -19,7 +19,7 @@ export function LoginScreen() {
     setIsLoading(true)
     try {
       const tokens = await authService.login(credentials)
-      const userData = await authService.getMe()
+      const userData = await authService.getMe(tokens.access)
       await login(tokens, userData)
     } catch (error) {
       Alert.alert('Error', 'Credenciales incorrectas')
