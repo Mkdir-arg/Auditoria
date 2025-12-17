@@ -14,7 +14,7 @@ import NetInfo from '@react-native-community/netinfo';
 import { Card } from '../components/Card';
 import { colors, spacing, fontSize } from '../styles/theme';
 
-const API_URL = 'http://192.168.1.2:8000/api';
+const API_URL = 'http://192.168.1.204:8000/api';
 
 export function HomeScreen({ navigation }: any) {
   const [instituciones, setInstituciones] = useState<any[]>([]);
