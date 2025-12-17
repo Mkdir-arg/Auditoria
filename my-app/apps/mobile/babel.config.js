@@ -4,10 +4,15 @@ module.exports = function(api) {
     presets: ['babel-preset-expo'],
     plugins: [
       ['@babel/plugin-proposal-decorators', { legacy: true }],
+      '@babel/plugin-transform-runtime',
       ['@babel/plugin-transform-class-properties', { loose: true }],
       ['@babel/plugin-transform-private-methods', { loose: true }],
       ['@babel/plugin-transform-private-property-in-object', { loose: true }],
-      // 'react-native-reanimated/plugin',
     ],
+    env: {
+      production: {
+        plugins: ['transform-remove-console'],
+      },
+    },
   };
 };

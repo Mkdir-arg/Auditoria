@@ -1,15 +1,29 @@
-import 'react-native-gesture-handler'
 import React from 'react'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { RootNavigator } from './src/navigation'
-import './src/utils/storage'
+import { StyleSheet, SafeAreaView } from 'react-native'
+import { WebView } from 'react-native-webview'
 
-const queryClient = new QueryClient()
+// URL del servidor web (cambia si usas otra red)
+const WEB_URL = 'http://192.168.1.205:3001'
 
 export default function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <RootNavigator />
-    </QueryClientProvider>
+    <SafeAreaView style={styles.container}>
+      <WebView
+        source={{ uri: WEB_URL }}
+        style={styles.webview}
+        javaScriptEnabled={true}
+        domStorageEnabled={true}
+        startInLoadingState={true}
+      />
+    </SafeAreaView>
   )
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  webview: {
+    flex: 1,
+  },
+})
