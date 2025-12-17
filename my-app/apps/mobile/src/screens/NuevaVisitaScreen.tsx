@@ -2,14 +2,16 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
-  TextInput,
+  ScrollView,
   TouchableOpacity,
   StyleSheet,
-  ScrollView,
   Alert,
 } from 'react-native';
-import { storageService } from '../services/storageService';
-import { useOfflineSync } from '../hooks/useOfflineSync';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Input } from '../components/Input';
+import { Button } from '../components/Button';
+import { Card } from '../components/Card';
+import { colors, spacing, fontSize, borderRadius } from '../styles/theme';
 
 const TIPOS_COMIDA = ['Desayuno', 'Almuerzo', 'Merienda', 'Cena', 'Vianda'];
 
@@ -18,7 +20,6 @@ export function NuevaVisitaScreen({ route, navigation }: any) {
   const [tipoComida, setTipoComida] = useState('Almuerzo');
   const [observaciones, setObservaciones] = useState('');
   const [loading, setLoading] = useState(false);
-  const { addToQueue } = useOfflineSync();
 
   const handleGuardar = async () => {
     if (!tipoComida) {
@@ -29,30 +30,34 @@ export function NuevaVisitaScreen({ route, navigation }: any) {
     setLoading(true);
 
     try {
-      const visita = await storageService.saveVisita({
-        institucionId,
-        fecha: Date.now(),
-        tipoComida,
+      const visita = {
+        id: Date.now(),
+        institucion_id: institucionId,
+        fecha: new Date().toISOString().split('T')[0],
+        tipo_comida: tipoComida,
         observaciones,
-      });
+        synced: false,
+      };
+
+      const visitasData = await AsyncStorage.getItem('@visitas');
+      const visitas = visitasData ? JSON.parse(visitasData) : [];
+      visitas.push(visita);
+      await AsyncStorage.setItem('@visitas', JSON.stringify(visitas));
 
       // Agregar a cola de sincronización
-      await addToQueue({
+      const syncQueue = await AsyncStorage.getItem('@sync_queue');
+      const queue = syncQueue ? JSON.parse(syncQueue) : [];
+      queue.push({
         type: 'CREATE',
         entity: 'visitas',
-        data: {
-          institucion: institucionId,
-          fecha: new Date(visita.fecha).toISOString().split('T')[0],
-          tipo_comida: visita.tipoComida,
-          observaciones: visita.observaciones,
-        },
+        data: visita,
       });
+      await AsyncStorage.setItem('@sync_queue', JSON.stringify(queue));
 
       Alert.alert('Éxito', 'Visita creada correctamente', [
         { text: 'OK', onPress: () => navigation.goBack() },
       ]);
     } catch (error) {
-      console.error('Error creando visita:', error);
       Alert.alert('Error', 'No se pudo crear la visita');
     } finally {
       setLoading(false);
@@ -68,7 +73,7 @@ export function NuevaVisitaScreen({ route, navigation }: any) {
         <Text style={styles.headerTitle}>Nueva Visita</Text>
       </View>
 
-      <View style={styles.form}>
+      <Card style={styles.card}>
         <Text style={styles.label}>Tipo de Comida *</Text>
         <View style={styles.chipContainer}>
           {TIPOS_COMIDA.map((tipo) => (
@@ -93,26 +98,21 @@ export function NuevaVisitaScreen({ route, navigation }: any) {
         </View>
 
         <Text style={styles.label}>Observaciones</Text>
-        <TextInput
-          style={styles.textArea}
+        <Input
           placeholder="Ingrese observaciones generales..."
           value={observaciones}
           onChangeText={setObservaciones}
           multiline
           numberOfLines={4}
-          textAlignVertical="top"
+          style={styles.textArea}
         />
 
-        <TouchableOpacity
-          style={[styles.button, loading && styles.buttonDisabled]}
+        <Button
+          title="Guardar Visita"
           onPress={handleGuardar}
-          disabled={loading}
-        >
-          <Text style={styles.buttonText}>
-            {loading ? 'Guardando...' : 'Guardar Visita'}
-          </Text>
-        </TouchableOpacity>
-      </View>
+          loading={loading}
+        />
+      </Card>
     </ScrollView>
   );
 }
@@ -120,81 +120,63 @@ export function NuevaVisitaScreen({ route, navigation }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f3f4f6',
+    backgroundColor: colors.gray[100],
   },
   header: {
-    backgroundColor: '#fff',
-    padding: 16,
+    backgroundColor: colors.white,
+    padding: spacing.lg,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    borderBottomColor: colors.gray[200],
   },
   backButton: {
-    color: '#3b82f6',
-    fontSize: 16,
-    marginBottom: 8,
+    color: colors.primary,
+    fontSize: fontSize.base,
+    marginBottom: spacing.sm,
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize: fontSize.xl,
     fontWeight: 'bold',
-    color: '#111827',
+    color: colors.gray[900],
   },
-  form: {
-    padding: 16,
+  card: {
+    margin: spacing.lg,
   },
   label: {
-    fontSize: 16,
+    fontSize: fontSize.base,
     fontWeight: '600',
-    color: '#374151',
-    marginBottom: 8,
-    marginTop: 16,
+    color: colors.gray[700],
+    marginBottom: spacing.sm,
+    marginTop: spacing.lg,
   },
   chipContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: spacing.sm,
+    marginBottom: spacing.lg,
   },
   chip: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+    borderRadius: borderRadius.full,
     borderWidth: 1,
-    borderColor: '#d1d5db',
-    backgroundColor: '#fff',
+    borderColor: colors.gray[300],
+    backgroundColor: colors.white,
   },
   chipSelected: {
-    backgroundColor: '#3b82f6',
-    borderColor: '#3b82f6',
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
   },
   chipText: {
-    color: '#374151',
-    fontSize: 14,
+    color: colors.gray[700],
+    fontSize: fontSize.sm,
   },
   chipTextSelected: {
-    color: '#fff',
+    color: colors.white,
     fontWeight: '600',
   },
   textArea: {
-    borderWidth: 1,
-    borderColor: '#d1d5db',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    backgroundColor: '#fff',
     minHeight: 100,
-  },
-  button: {
-    backgroundColor: '#3b82f6',
-    padding: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 24,
-  },
-  buttonDisabled: {
-    backgroundColor: '#9ca3af',
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
+    textAlignVertical: 'top',
+    marginBottom: spacing.lg,
   },
 });

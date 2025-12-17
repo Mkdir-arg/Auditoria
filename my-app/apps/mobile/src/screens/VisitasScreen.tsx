@@ -1,58 +1,50 @@
 import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  FlatList,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
-} from 'react-native';
-import { storageService } from '../services/storageService';
-import { useOfflineSync } from '../hooks/useOfflineSync';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Card } from '../components/Card';
+import { Button } from '../components/Button';
+import { colors, spacing, fontSize } from '../styles/theme';
 
 export function VisitasScreen({ route, navigation }: any) {
   const { institucionId } = route.params;
   const [visitas, setVisitas] = useState<any[]>([]);
-  const [institucion, setInstitucion] = useState<any | null>(null);
-  const { isOnline, addToQueue } = useOfflineSync();
+  const [institucion, setInstitucion] = useState<any>(null);
 
   useEffect(() => {
     loadData();
   }, []);
 
   const loadData = async () => {
-    const instituciones = await storageService.getInstituciones();
-    const inst = instituciones.find((i: any) => i.id === institucionId);
-    setInstitucion(inst);
+    const instituciones = await AsyncStorage.getItem('@instituciones');
+    if (instituciones) {
+      const inst = JSON.parse(instituciones).find((i: any) => i.id === institucionId);
+      setInstitucion(inst);
+    }
 
-    const visitasData = await storageService.getVisitas(institucionId);
-    setVisitas(visitasData);
+    const visitasData = await AsyncStorage.getItem('@visitas');
+    if (visitasData) {
+      const allVisitas = JSON.parse(visitasData);
+      setVisitas(allVisitas.filter((v: any) => v.institucion_id === institucionId));
+    }
   };
 
-  const handleNuevaVisita = () => {
-    navigation.navigate('NuevaVisita', { institucionId });
+  const formatFecha = (fecha: string) => {
+    return new Date(fecha).toLocaleDateString('es-AR');
   };
 
-  const handleVerVisita = (visita: Visita) => {
-    navigation.navigate('DetalleVisita', { visitaId: visita.id });
-  };
-
-  const formatFecha = (timestamp: number) => {
-    return new Date(timestamp).toLocaleDateString('es-AR');
-  };
-
-  const renderItem = ({ item }: { item: any }) => (
-    <TouchableOpacity style={styles.card} onPress={() => handleVerVisita(item)}>
-      <View style={styles.cardHeader}>
+  const renderItem = ({ item }: any) => (
+    <TouchableOpacity
+      onPress={() => navigation.navigate('DetalleVisita', { visitaId: item.id })}
+    >
+      <Card style={styles.card}>
         <Text style={styles.cardTitle}>{formatFecha(item.fecha)}</Text>
-        {!item.synced && <View style={styles.unsyncedBadge} />}
-      </View>
-      <Text style={styles.cardSubtitle}>Tipo: {item.tipoComida}</Text>
-      {item.observaciones && (
-        <Text style={styles.cardText} numberOfLines={2}>
-          {item.observaciones}
-        </Text>
-      )}
+        <Text style={styles.cardSubtitle}>Tipo: {item.tipo_comida}</Text>
+        {item.observaciones && (
+          <Text style={styles.cardText} numberOfLines={2}>
+            {item.observaciones}
+          </Text>
+        )}
+      </Card>
     </TouchableOpacity>
   );
 
@@ -65,25 +57,22 @@ export function VisitasScreen({ route, navigation }: any) {
         <Text style={styles.headerTitle}>{institucion?.nombre}</Text>
       </View>
 
-      {!isOnline && (
-        <View style={styles.offlineBanner}>
-          <Text style={styles.offlineText}>⚠️ Modo offline</Text>
-        </View>
-      )}
+      <View style={styles.content}>
+        <Button
+          title="+ Nueva Visita"
+          onPress={() => navigation.navigate('NuevaVisita', { institucionId })}
+        />
 
-      <TouchableOpacity style={styles.addButton} onPress={handleNuevaVisita}>
-        <Text style={styles.addButtonText}>+ Nueva Visita</Text>
-      </TouchableOpacity>
-
-      <FlatList
-        data={visitas}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.list}
-        ListEmptyComponent={
-          <Text style={styles.emptyText}>No hay visitas registradas</Text>
-        }
-      />
+        <FlatList
+          data={visitas}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id.toString()}
+          contentContainerStyle={styles.list}
+          ListEmptyComponent={
+            <Text style={styles.emptyText}>No hay visitas registradas</Text>
+          }
+        />
+      </View>
     </View>
   );
 }
@@ -91,90 +80,53 @@ export function VisitasScreen({ route, navigation }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f3f4f6',
+    backgroundColor: colors.gray[100],
   },
   header: {
-    backgroundColor: '#fff',
-    padding: 16,
+    backgroundColor: colors.white,
+    padding: spacing.lg,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    borderBottomColor: colors.gray[200],
   },
   backButton: {
-    color: '#3b82f6',
-    fontSize: 16,
-    marginBottom: 8,
+    color: colors.primary,
+    fontSize: fontSize.base,
+    marginBottom: spacing.sm,
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize: fontSize.xl,
     fontWeight: 'bold',
-    color: '#111827',
+    color: colors.gray[900],
   },
-  offlineBanner: {
-    backgroundColor: '#fef3c7',
-    padding: 12,
-  },
-  offlineText: {
-    color: '#92400e',
-    textAlign: 'center',
-    fontWeight: '600',
-  },
-  addButton: {
-    backgroundColor: '#3b82f6',
-    margin: 16,
-    padding: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  addButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
+  content: {
+    flex: 1,
+    padding: spacing.lg,
   },
   list: {
-    padding: 16,
-    paddingTop: 0,
+    marginTop: spacing.lg,
   },
   card: {
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 4,
+    marginBottom: spacing.md,
   },
   cardTitle: {
-    fontSize: 18,
+    fontSize: fontSize.lg,
     fontWeight: '600',
-    color: '#111827',
-  },
-  unsyncedBadge: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#f59e0b',
+    color: colors.gray[900],
+    marginBottom: spacing.xs,
   },
   cardSubtitle: {
-    fontSize: 14,
-    color: '#6b7280',
-    marginBottom: 8,
+    fontSize: fontSize.sm,
+    color: colors.gray[500],
+    marginBottom: spacing.sm,
   },
   cardText: {
-    fontSize: 14,
-    color: '#374151',
+    fontSize: fontSize.sm,
+    color: colors.gray[700],
   },
   emptyText: {
     textAlign: 'center',
-    color: '#9ca3af',
-    marginTop: 32,
-    fontSize: 16,
+    color: colors.gray[400],
+    marginTop: spacing['3xl'],
+    fontSize: fontSize.base,
   },
 });
