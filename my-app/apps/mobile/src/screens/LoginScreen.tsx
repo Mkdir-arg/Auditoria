@@ -1,108 +1,162 @@
-import React, { useState } from 'react'
-import { View, Text, StyleSheet, Alert } from 'react-native'
-import { useAuthStore } from '../store/authStore'
-import { authService } from '../services/authService'
-import { Button } from '../components/ui/Button'
-import { Input } from '../components/ui/Input'
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+  ActivityIndicator,
+} from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useOfflineSync } from '../hooks/useOfflineSync';
 
-export function LoginScreen() {
-  const [credentials, setCredentials] = useState({ username: '', password: '' })
-  const [isLoading, setIsLoading] = useState(false)
-  const login = useAuthStore((state) => state.login)
+const API_URL = 'http://192.168.1.205:8000/api';
+
+export function LoginScreen({ navigation }: any) {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const { isOnline } = useOfflineSync();
 
   const handleLogin = async () => {
-    if (!credentials.username || !credentials.password) {
-      Alert.alert('Error', 'Por favor completa todos los campos')
-      return
+    if (!username || !password) {
+      Alert.alert('Error', 'Complete todos los campos');
+      return;
     }
 
-    setIsLoading(true)
+    setLoading(true);
+
     try {
-      const tokens = await authService.login(credentials)
-      const userData = await authService.getMe(tokens.access)
-      await login(tokens, userData)
-    } catch (error) {
-      Alert.alert('Error', 'Credenciales incorrectas')
+      const response = await fetch(`${API_URL}/auth/login/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Credenciales inválidas');
+      }
+
+      const data = await response.json();
+      
+      // Guardar token
+      await AsyncStorage.setItem('@auth_token', data.access);
+      await AsyncStorage.setItem('@user_data', JSON.stringify(data.user));
+
+      navigation.replace('Home');
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Error al iniciar sesión');
     } finally {
-      setIsLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Auditoria</Text>
-        <Text style={styles.subtitle}>Iniciar sesión</Text>
-      </View>
+      <View style={styles.card}>
+        <Text style={styles.title}>Auditoría Nutricional</Text>
+        <Text style={styles.subtitle}>Iniciar Sesión</Text>
 
-      <View style={styles.form}>
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Usuario</Text>
-          <Input
-            placeholder="Ingresa tu usuario"
-            value={credentials.username}
-            onChangeText={(text) => setCredentials({ ...credentials, username: text })}
-          />
-        </View>
+        {!isOnline && (
+          <View style={styles.offlineBanner}>
+            <Text style={styles.offlineText}>⚠️ Sin conexión</Text>
+          </View>
+        )}
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Contraseña</Text>
-          <Input
-            placeholder="Ingresa tu contraseña"
-            value={credentials.password}
-            onChangeText={(text) => setCredentials({ ...credentials, password: text })}
-            secureTextEntry
-          />
-        </View>
-
-        <Button
-          title={isLoading ? 'Iniciando sesión...' : 'Iniciar sesión'}
-          onPress={handleLogin}
-          disabled={isLoading}
+        <TextInput
+          style={styles.input}
+          placeholder="Usuario"
+          value={username}
+          onChangeText={setUsername}
+          autoCapitalize="none"
         />
+
+        <TextInput
+          style={styles.input}
+          placeholder="Contraseña"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+        />
+
+        <TouchableOpacity
+          style={[styles.button, loading && styles.buttonDisabled]}
+          onPress={handleLogin}
+          disabled={loading || !isOnline}
+        >
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.buttonText}>Ingresar</Text>
+          )}
+        </TouchableOpacity>
       </View>
     </View>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafb',
-    padding: 24,
+    backgroundColor: '#f3f4f6',
     justifyContent: 'center',
+    padding: 20,
   },
-  header: {
-    alignItems: 'center',
-    marginBottom: 48,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#111827',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 18,
-    color: '#6b7280',
-  },
-  form: {
-    backgroundColor: '#ffffff',
-    padding: 24,
+  card: {
+    backgroundColor: '#fff',
     borderRadius: 12,
+    padding: 24,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowRadius: 8,
+    elevation: 4,
   },
-  inputGroup: {
-    marginBottom: 20,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#374151',
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#111827',
+    textAlign: 'center',
     marginBottom: 8,
   },
-})
+  subtitle: {
+    fontSize: 16,
+    color: '#6b7280',
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  offlineBanner: {
+    backgroundColor: '#fef3c7',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  offlineText: {
+    color: '#92400e',
+    textAlign: 'center',
+    fontWeight: '600',
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 16,
+    fontSize: 16,
+  },
+  button: {
+    backgroundColor: '#3b82f6',
+    padding: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  buttonDisabled: {
+    backgroundColor: '#9ca3af',
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+});
