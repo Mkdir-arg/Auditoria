@@ -8,8 +8,7 @@ import {
   ScrollView,
   Alert,
 } from 'react-native';
-import { database } from '../database';
-import { Visita } from '../database/models/Visita';
+import { storageService } from '../services/storageService';
 import { useOfflineSync } from '../hooks/useOfflineSync';
 
 const TIPOS_COMIDA = ['Desayuno', 'Almuerzo', 'Merienda', 'Cena', 'Vianda'];
@@ -30,26 +29,23 @@ export function NuevaVisitaScreen({ route, navigation }: any) {
     setLoading(true);
 
     try {
-      await database.write(async () => {
-        const visita = await database.get<Visita>('visitas').create((v: any) => {
-          v.institucionId = institucionId;
-          v.fecha = Date.now();
-          v.tipoComida = tipoComida;
-          v.observaciones = observaciones;
-          v.synced = false;
-        });
+      const visita = await storageService.saveVisita({
+        institucionId,
+        fecha: Date.now(),
+        tipoComida,
+        observaciones,
+      });
 
-        // Agregar a cola de sincronización
-        await addToQueue({
-          type: 'CREATE',
-          entity: 'visitas',
-          data: {
-            institucion: institucionId,
-            fecha: new Date(visita.fecha).toISOString().split('T')[0],
-            tipo_comida: visita.tipoComida,
-            observaciones: visita.observaciones,
-          },
-        });
+      // Agregar a cola de sincronización
+      await addToQueue({
+        type: 'CREATE',
+        entity: 'visitas',
+        data: {
+          institucion: institucionId,
+          fecha: new Date(visita.fecha).toISOString().split('T')[0],
+          tipo_comida: visita.tipoComida,
+          observaciones: visita.observaciones,
+        },
       });
 
       Alert.alert('Éxito', 'Visita creada correctamente', [

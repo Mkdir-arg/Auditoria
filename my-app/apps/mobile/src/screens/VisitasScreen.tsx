@@ -7,15 +7,13 @@ import {
   StyleSheet,
   Alert,
 } from 'react-native';
-import { database } from '../database';
-import { Visita } from '../database/models/Visita';
-import { Institucion } from '../database/models/Institucion';
+import { storageService } from '../services/storageService';
 import { useOfflineSync } from '../hooks/useOfflineSync';
 
 export function VisitasScreen({ route, navigation }: any) {
   const { institucionId } = route.params;
-  const [visitas, setVisitas] = useState<Visita[]>([]);
-  const [institucion, setInstitucion] = useState<Institucion | null>(null);
+  const [visitas, setVisitas] = useState<any[]>([]);
+  const [institucion, setInstitucion] = useState<any | null>(null);
   const { isOnline, addToQueue } = useOfflineSync();
 
   useEffect(() => {
@@ -23,14 +21,11 @@ export function VisitasScreen({ route, navigation }: any) {
   }, []);
 
   const loadData = async () => {
-    const inst = await database.get<Institucion>('instituciones').find(institucionId);
+    const instituciones = await storageService.getInstituciones();
+    const inst = instituciones.find((i: any) => i.id === institucionId);
     setInstitucion(inst);
 
-    const visitasData = await database
-      .get<Visita>('visitas')
-      .query()
-      .where('institucion_id', institucionId)
-      .fetch();
+    const visitasData = await storageService.getVisitas(institucionId);
     setVisitas(visitasData);
   };
 
@@ -46,7 +41,7 @@ export function VisitasScreen({ route, navigation }: any) {
     return new Date(timestamp).toLocaleDateString('es-AR');
   };
 
-  const renderItem = ({ item }: { item: Visita }) => (
+  const renderItem = ({ item }: { item: any }) => (
     <TouchableOpacity style={styles.card} onPress={() => handleVerVisita(item)}>
       <View style={styles.cardHeader}>
         <Text style={styles.cardTitle}>{formatFecha(item.fecha)}</Text>

@@ -9,15 +9,13 @@ import {
   TextInput,
   Modal,
 } from 'react-native';
-import { database } from '../database';
-import { Visita } from '../database/models/Visita';
-import { Plato } from '../database/models/Plato';
+import { storageService } from '../services/storageService';
 import { useOfflineSync } from '../hooks/useOfflineSync';
 
 export function DetalleVisitaScreen({ route, navigation }: any) {
   const { visitaId } = route.params;
-  const [visita, setVisita] = useState<Visita | null>(null);
-  const [platos, setPlatos] = useState<Plato[]>([]);
+  const [visita, setVisita] = useState<any | null>(null);
+  const [platos, setPlatos] = useState<any[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [nombrePlato, setNombrePlato] = useState('');
   const [descripcionPlato, setDescripcionPlato] = useState('');
@@ -28,14 +26,11 @@ export function DetalleVisitaScreen({ route, navigation }: any) {
   }, []);
 
   const loadData = async () => {
-    const v = await database.get<Visita>('visitas').find(visitaId);
+    const visitas = await storageService.getVisitas();
+    const v = visitas.find((vis: any) => vis.id === visitaId);
     setVisita(v);
 
-    const platosData = await database
-      .get<Plato>('platos')
-      .query()
-      .where('visita_id', visitaId)
-      .fetch();
+    const platosData = await storageService.getPlatos(visitaId);
     setPlatos(platosData);
   };
 
@@ -46,23 +41,20 @@ export function DetalleVisitaScreen({ route, navigation }: any) {
     }
 
     try {
-      await database.write(async () => {
-        await database.get<Plato>('platos').create((p: any) => {
-          p.visitaId = visitaId;
-          p.nombre = nombrePlato;
-          p.descripcion = descripcionPlato;
-          p.synced = false;
-        });
+      await storageService.savePlato({
+        visitaId,
+        nombre: nombrePlato,
+        descripcion: descripcionPlato,
+      });
 
-        await addToQueue({
-          type: 'CREATE',
-          entity: 'platos',
-          data: {
-            visita: visitaId,
-            nombre: nombrePlato,
-            descripcion: descripcionPlato,
-          },
-        });
+      await addToQueue({
+        type: 'CREATE',
+        entity: 'platos',
+        data: {
+          visita: visitaId,
+          nombre: nombrePlato,
+          descripcion: descripcionPlato,
+        },
       });
 
       setNombrePlato('');
@@ -75,7 +67,7 @@ export function DetalleVisitaScreen({ route, navigation }: any) {
     }
   };
 
-  const renderPlato = ({ item }: { item: Plato }) => (
+  const renderPlato = ({ item }: { item: any }) => (
     <View style={styles.platoCard}>
       <View style={styles.platoHeader}>
         <Text style={styles.platoNombre}>{item.nombre}</Text>

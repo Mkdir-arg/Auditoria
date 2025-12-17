@@ -8,15 +8,14 @@ import {
   RefreshControl,
   ActivityIndicator,
 } from 'react-native';
-import { database } from '../database';
-import { Institucion } from '../database/models/Institucion';
+import { storageService } from '../services/storageService';
 import { useOfflineSync } from '../hooks/useOfflineSync';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const API_URL = 'http://192.168.1.205:8000/api';
 
 export function HomeScreen({ navigation }: any) {
-  const [instituciones, setInstituciones] = useState<Institucion[]>([]);
+  const [instituciones, setInstituciones] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const { isOnline, pendingOps } = useOfflineSync();
@@ -27,8 +26,8 @@ export function HomeScreen({ navigation }: any) {
 
   const loadInstituciones = async () => {
     try {
-      // Cargar desde base de datos local
-      const localData = await database.get<Institucion>('instituciones').query().fetch();
+      // Cargar desde storage local
+      const localData = await storageService.getInstituciones();
       setInstituciones(localData);
 
       // Si hay internet, sincronizar con servidor
@@ -56,43 +55,20 @@ export function HomeScreen({ navigation }: any) {
 
       const serverData = await response.json();
 
-      // Actualizar base de datos local
-      await database.write(async () => {
-        for (const item of serverData) {
-          const existing = await database
-            .get<Institucion>('instituciones')
-            .query()
-            .where('server_id', item.id)
-            .fetch();
+      // Actualizar storage local
+      const instituciones = serverData.map((item: any) => ({
+        id: item.id.toString(),
+        nombre: item.nombre,
+        tipo: item.tipo,
+        direccion: item.direccion,
+        comuna: item.comuna,
+        barrio: item.barrio,
+        serverId: item.id,
+        synced: true,
+      }));
 
-          if (existing.length > 0) {
-            // Actualizar
-            await existing[0].update((inst: any) => {
-              inst.nombre = item.nombre;
-              inst.tipo = item.tipo;
-              inst.direccion = item.direccion;
-              inst.comuna = item.comuna;
-              inst.barrio = item.barrio;
-              inst.synced = true;
-            });
-          } else {
-            // Crear nuevo
-            await database.get<Institucion>('instituciones').create((inst: any) => {
-              inst.nombre = item.nombre;
-              inst.tipo = item.tipo;
-              inst.direccion = item.direccion;
-              inst.comuna = item.comuna;
-              inst.barrio = item.barrio;
-              inst.serverId = item.id;
-              inst.synced = true;
-            });
-          }
-        }
-      });
-
-      // Recargar lista
-      const updated = await database.get<Institucion>('instituciones').query().fetch();
-      setInstituciones(updated);
+      await storageService.updateInstituciones(instituciones);
+      setInstituciones(instituciones);
     } catch (error) {
       console.error('Error sincronizando:', error);
     }
@@ -103,7 +79,7 @@ export function HomeScreen({ navigation }: any) {
     navigation.replace('Login');
   };
 
-  const renderItem = ({ item }: { item: Institucion }) => (
+  const renderItem = ({ item }: { item: any }) => (
     <TouchableOpacity
       style={styles.card}
       onPress={() => navigation.navigate('Visitas', { institucionId: item.id })}
