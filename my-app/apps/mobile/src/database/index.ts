@@ -8,7 +8,7 @@ import { Plato } from './models/Plato';
 const adapter = new SQLiteAdapter({
   schema,
   dbName: 'auditoria',
-  jsi: true,
+  jsi: false,
 });
 
 export const database = new Database({
