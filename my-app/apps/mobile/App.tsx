@@ -4,7 +4,7 @@ import { WebView } from 'react-native-webview';
 import { syncService } from './src/services/syncService';
 import { useOfflineSync } from './src/hooks/useOfflineSync';
 
-const WEB_URL = 'http://192.168.1.205:3001';
+const WEB_URL = 'http://192.168.1.2:3001';
 
 function OfflineBanner({ isOnline, pendingOps }: any) {
   if (isOnline) return null;
