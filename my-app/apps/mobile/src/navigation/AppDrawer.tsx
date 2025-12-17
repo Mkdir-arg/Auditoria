@@ -1,15 +1,13 @@
 import React from 'react'
-import { createDrawerNavigator } from '@react-navigation/drawer'
+import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { HomeScreen } from '../screens/HomeScreen'
 import { UsersScreen } from '../screens/UsersScreen'
-import { DrawerContent } from '../components/layout/DrawerContent'
 
-const Drawer = createDrawerNavigator()
+const Stack = createNativeStackNavigator()
 
 export function AppDrawer() {
   return (
-    <Drawer.Navigator
-      drawerContent={(props) => <DrawerContent {...props} />}
+    <Stack.Navigator
       screenOptions={{
         headerStyle: {
           backgroundColor: '#ffffff',
@@ -20,16 +18,16 @@ export function AppDrawer() {
         },
       }}
     >
-      <Drawer.Screen 
+      <Stack.Screen 
         name="Home" 
         component={HomeScreen}
         options={{ title: 'Panel' }}
       />
-      <Drawer.Screen 
+      <Stack.Screen 
         name="Users" 
         component={UsersScreen}
         options={{ title: 'Usuarios' }}
       />
-    </Drawer.Navigator>
+    </Stack.Navigator>
   )
 }
