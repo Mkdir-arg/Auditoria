@@ -1,5 +1,4 @@
-import { create } from 'zustand'
-import { getStorage } from '../utils/storage'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 interface User {
   id: number
@@ -14,52 +13,58 @@ interface AuthState {
   accessToken: string | null
   refreshToken: string | null
   isAuthenticated: boolean
-  login: (tokens: { access: string; refresh: string }, user: User) => Promise<void>
-  logout: () => Promise<void>
-  loadTokens: () => Promise<void>
 }
 
-export const useAuthStore = create<AuthState>((set, get) => ({
-  user: null,
-  accessToken: null,
-  refreshToken: null,
-  isAuthenticated: false,
-  
-  login: async (tokens, user) => {
-    const storage = getStorage()
-    await storage.setItem('access_token', tokens.access)
-    await storage.setItem('refresh_token', tokens.refresh)
-    set({
+class AuthStore {
+  private state: AuthState = {
+    user: null,
+    accessToken: null,
+    refreshToken: null,
+    isAuthenticated: false,
+  }
+
+  async login(tokens: { access: string; refresh: string }, user: User) {
+    await AsyncStorage.setItem('access_token', tokens.access)
+    await AsyncStorage.setItem('refresh_token', tokens.refresh)
+    await AsyncStorage.setItem('@user_data', JSON.stringify(user))
+    this.state = {
       user,
       accessToken: tokens.access,
       refreshToken: tokens.refresh,
       isAuthenticated: true,
-    })
-  },
-  
-  logout: async () => {
-    const storage = getStorage()
-    await storage.removeItem('access_token')
-    await storage.removeItem('refresh_token')
-    set({
+    }
+  }
+
+  async logout() {
+    await AsyncStorage.removeItem('access_token')
+    await AsyncStorage.removeItem('refresh_token')
+    await AsyncStorage.removeItem('@user_data')
+    this.state = {
       user: null,
       accessToken: null,
       refreshToken: null,
       isAuthenticated: false,
-    })
-  },
-  
-  loadTokens: async () => {
-    const storage = getStorage()
-    const accessToken = await storage.getItem('access_token')
-    const refreshToken = await storage.getItem('refresh_token')
+    }
+  }
+
+  async loadTokens() {
+    const accessToken = await AsyncStorage.getItem('access_token')
+    const refreshToken = await AsyncStorage.getItem('refresh_token')
+    const userData = await AsyncStorage.getItem('@user_data')
     
     if (accessToken && refreshToken) {
-      set({
+      this.state = {
+        user: userData ? JSON.parse(userData) : null,
         accessToken,
         refreshToken,
         isAuthenticated: true,
-      })
+      }
     }
-  },
-}))
+  }
+
+  getState() {
+    return this.state
+  }
+}
+
+export const authStore = new AuthStore()
