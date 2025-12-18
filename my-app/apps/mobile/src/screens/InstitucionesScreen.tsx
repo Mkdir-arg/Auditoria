@@ -9,6 +9,7 @@ import {
   RefreshControl,
   Alert,
 } from 'react-native';
+import { clearAllData } from '../utils/clearStorage';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { Card } from '../components/Card';
@@ -17,7 +18,7 @@ import { colors, spacing, fontSize, borderRadius } from '../styles/theme';
 
 const API_URL = 'http://192.168.1.204:8000/api';
 
-export function InstitucionesScreen({ navigation }: any) {
+export function InstitucionesScreen({ navigation, route }: any) {
   const [instituciones, setInstituciones] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
@@ -26,22 +27,51 @@ export function InstitucionesScreen({ navigation }: any) {
   useEffect(() => {
     loadInstituciones();
   }, []);
+  
+  useEffect(() => {
+    if (route.params?.refresh) {
+      loadInstituciones();
+    }
+  }, [route.params?.refresh]);
 
   const loadInstituciones = async () => {
     try {
       const cached = await AsyncStorage.getItem('@instituciones');
+      console.log('📚 Cargando instituciones desde cache...');
       if (cached) {
-        setInstituciones(JSON.parse(cached));
+        const inst = JSON.parse(cached);
+        console.log('✅ Instituciones cargadas:', inst.length);
+        setInstituciones(inst);
+      } else {
+        console.log('⚠️ No hay instituciones en cache');
       }
 
       const token = await AsyncStorage.getItem('@auth_token');
-      const response = await axios.get(`${API_URL}/auditoria/instituciones/`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      try {
+        const response = await axios.get(`${API_URL}/auditoria/instituciones/`, {
+          headers: { Authorization: `Bearer ${token}` },
+          timeout: 5000,
+        });
 
-      const data = Array.isArray(response.data?.results) ? response.data.results : Array.isArray(response.data) ? response.data : [];
-      await AsyncStorage.setItem('@instituciones', JSON.stringify(data));
-      setInstituciones(data);
+        const serverData = Array.isArray(response.data?.results) ? response.data.results : Array.isArray(response.data) ? response.data : [];
+        
+        // Marcar datos del servidor como sincronizados
+        const syncedServer = serverData.map((i: any) => ({ ...i, synced: true }));
+        
+        // Solo agregar locales que NO están en el servidor
+        const localData = JSON.parse(cached || '[]');
+        const unsyncedLocal = localData.filter((local: any) => 
+          local.synced === false && !syncedServer.find((s: any) => s.codigo === local.codigo)
+        );
+        
+        const merged = [...syncedServer, ...unsyncedLocal];
+        
+        await AsyncStorage.setItem('@instituciones', JSON.stringify(merged));
+        setInstituciones(merged);
+        console.log('🔄 Servidor:', syncedServer.length, 'Local:', unsyncedLocal.length);
+      } catch (apiError) {
+        console.log('⚠️ API no disponible, usando solo cache');
+      }
     } catch (error) {
       console.error('Error:', error);
     } finally {
@@ -143,6 +173,28 @@ export function InstitucionesScreen({ navigation }: any) {
           onPress={() => navigation.navigate('NuevaInstitucion')}
         >
           <Text style={styles.addButtonText}>+ Nueva Institución</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.clearButton}
+          onPress={async () => {
+            Alert.alert(
+              'Limpiar datos offline',
+              '¿Eliminar todos los datos no sincronizados?',
+              [
+                { text: 'Cancelar', style: 'cancel' },
+                {
+                  text: 'Limpiar',
+                  style: 'destructive',
+                  onPress: async () => {
+                    await clearAllData();
+                    loadInstituciones();
+                  },
+                },
+              ]
+            );
+          }}
+        >
+          <Text style={styles.clearButtonText}>🗑️ Limpiar Cache</Text>
         </TouchableOpacity>
       </View>
 
@@ -329,8 +381,11 @@ const styles = StyleSheet.create({
   addButtonContainer: {
     padding: spacing.lg,
     backgroundColor: colors.white,
+    flexDirection: 'row',
+    gap: spacing.md,
   },
   addButton: {
+    flex: 1,
     backgroundColor: colors.primary,
     padding: spacing.lg,
     borderRadius: borderRadius.lg,
@@ -339,6 +394,18 @@ const styles = StyleSheet.create({
   addButtonText: {
     color: colors.white,
     fontSize: fontSize.base,
+    fontWeight: '600',
+  },
+  clearButton: {
+    backgroundColor: colors.danger,
+    padding: spacing.lg,
+    borderRadius: borderRadius.lg,
+    alignItems: 'center',
+    minWidth: 120,
+  },
+  clearButtonText: {
+    color: colors.white,
+    fontSize: fontSize.sm,
     fontWeight: '600',
   },
 });

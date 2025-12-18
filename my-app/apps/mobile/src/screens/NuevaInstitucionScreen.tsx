@@ -33,26 +33,42 @@ export function NuevaInstitucionScreen({ navigation }: any) {
       return;
     }
 
-    const institucion = {
-      id: Date.now(),
-      codigo,
-      nombre,
-      tipo,
-      direccion,
-      barrio,
-      comuna,
-      activo: true,
-      synced: false,
-    };
+    try {
+      const institucion = {
+        id: Date.now(),
+        codigo,
+        nombre,
+        tipo,
+        direccion,
+        barrio,
+        comuna,
+        activo: true,
+        synced: false,
+      };
 
-    const instituciones = await AsyncStorage.getItem('@instituciones');
-    const allInstituciones = instituciones ? JSON.parse(instituciones) : [];
-    allInstituciones.push(institucion);
-    await AsyncStorage.setItem('@instituciones', JSON.stringify(allInstituciones));
+      console.log('📦 Guardando institución:', institucion);
 
-    Alert.alert('Éxito', 'Institución creada', [
-      { text: 'OK', onPress: () => navigation.goBack() },
-    ]);
+      const instituciones = await AsyncStorage.getItem('@instituciones');
+      const allInstituciones = instituciones ? JSON.parse(instituciones) : [];
+      allInstituciones.push(institucion);
+      
+      await AsyncStorage.setItem('@instituciones', JSON.stringify(allInstituciones));
+      
+      console.log('✅ Institución guardada. Total:', allInstituciones.length);
+
+      Alert.alert('Éxito', 'Institución creada correctamente', [
+        { 
+          text: 'OK', 
+          onPress: () => {
+            // Forzar recarga en la pantalla anterior
+            navigation.navigate('Instituciones', { refresh: Date.now() });
+          }
+        },
+      ]);
+    } catch (error) {
+      console.error('❌ Error guardando institución:', error);
+      Alert.alert('Error', 'No se pudo guardar la institución');
+    }
   };
 
   return (

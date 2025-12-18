@@ -11,7 +11,9 @@ import NetInfo from '@react-native-community/netinfo';
 import axios from 'axios';
 import { colors, spacing } from '../styles/theme';
 
-const API_URL = 'http://10.0.2.2:8000/api';
+// Para EMULADOR Android: http://10.0.2.2:8000/api
+// Para CELULAR FÍSICO: http://192.168.1.204:8000/api
+const API_URL = 'http://192.168.1.204:8000/api';
 
 export function SyncButton() {
   const [pendingCount, setPendingCount] = useState(0);
@@ -28,11 +30,6 @@ export function SyncButton() {
     const unsubscribe = NetInfo.addEventListener(state => {
       const connected = state.isConnected || false;
       setIsOnline(connected);
-      
-      // Auto-sync cuando se conecta
-      if (connected && !syncing) {
-        setTimeout(() => syncData(true), 1000);
-      }
     });
     
     return () => {
@@ -63,7 +60,7 @@ export function SyncButton() {
   };
 
   const syncData = async (silent = false) => {
-    if (syncing || !isOnline) return;
+    if (syncing) return;
 
     try {
       setSyncing(true);
@@ -72,7 +69,7 @@ export function SyncButton() {
       try {
         await axios.get(`${API_URL}/`, { timeout: 3000 });
       } catch (err) {
-        console.log('⚠️ Backend no disponible, reintentando después');
+        if (!silent) console.log('⚠️ Backend no disponible');
         setSyncing(false);
         return;
       }
@@ -85,28 +82,61 @@ export function SyncButton() {
 
       const headers = { Authorization: `Bearer ${token}` };
       let synced = 0;
+      const idMapInst: any = {};
+      const idMapVis: any = {};
+      const idMapPlatos: any = {};
+
+      console.log('🔄 Iniciando sincronización...');
+
+      // Limpiar duplicados
+      const cleanDuplicates = (items: any[]) => {
+        const seen = new Set();
+        return items.filter(item => {
+          if (seen.has(item.id)) return false;
+          seen.add(item.id);
+          return true;
+        });
+      };
 
       // 1. Instituciones
       const inst = await AsyncStorage.getItem('@instituciones');
       if (inst) {
-        const instituciones = JSON.parse(inst);
+        let instituciones = JSON.parse(inst);
         if (Array.isArray(instituciones)) {
-          for (const item of instituciones.filter((i: any) => !i.synced)) {
+          instituciones = cleanDuplicates(instituciones);
+          const pendingInst = instituciones.filter((i: any) => !i.synced);
+          console.log(`📍 [1/4] Instituciones pendientes: ${pendingInst.length}`);
+          for (const item of pendingInst) {
+            const oldId = item.id;
             try {
+              console.log(`  → Sincronizando institución: ${item.nombre} (ID temp: ${oldId})`);
               const res = await axios.post(`${API_URL}/auditoria/instituciones/`, {
                 codigo: item.codigo,
                 nombre: item.nombre,
                 tipo: item.tipo,
-                direccion: item.direccion,
-                barrio: item.barrio,
-                comuna: item.comuna,
-                activo: item.activo,
+                direccion: item.direccion || '',
+                barrio: item.barrio || '',
+                comuna: item.comuna || '',
+                activo: item.activo ?? true,
               }, { headers, timeout: 10000 });
               item.id = res.data.id;
               item.synced = true;
+              idMapInst[oldId] = res.data.id;
+              console.log(`  ✅ Institución creada: ID ${oldId} → ${res.data.id}`);
               synced++;
-            } catch (err) {
-              console.error('Error sync inst:', err);
+            } catch (err: any) {
+              if (err.response?.status === 400 && err.response?.data?.codigo?.[0]?.includes('already exists')) {
+                try {
+                  const search = await axios.get(`${API_URL}/auditoria/instituciones/?codigo=${item.codigo}`, { headers });
+                  if (search.data.results?.[0]) {
+                    item.id = search.data.results[0].id;
+                    item.synced = true;
+                    idMapInst[oldId] = search.data.results[0].id;
+                    console.log(`  ⚠️ Institución ya existe: ID ${oldId} → ${search.data.results[0].id}`);
+                  }
+                } catch {}
+              }
+              item.synced = true;
             }
           }
           await AsyncStorage.setItem('@instituciones', JSON.stringify(instituciones));
@@ -116,21 +146,31 @@ export function SyncButton() {
       // 2. Visitas
       const vis = await AsyncStorage.getItem('@visitas');
       if (vis) {
-        const visitas = JSON.parse(vis);
+        let visitas = JSON.parse(vis);
         if (Array.isArray(visitas)) {
-          for (const item of visitas.filter((v: any) => !v.synced)) {
+          visitas = cleanDuplicates(visitas);
+          const pendingVis = visitas.filter((v: any) => !v.synced);
+          console.log(`📍 [2/4] Visitas pendientes: ${pendingVis.length}`);
+          for (const item of pendingVis) {
+            const oldId = item.id;
+            const instId = idMapInst[item.institucion_id] || item.institucion_id;
+            console.log(`  → Sincronizando visita: ${item.fecha} (ID temp: ${oldId}, depende de inst: ${item.institucion_id} → ${instId})`);
             try {
               const res = await axios.post(`${API_URL}/auditoria/visitas/`, {
-                institucion: item.institucion_id,
+                institucion: instId,
                 fecha: item.fecha,
-                tipo_comida: item.tipo_comida,
-                observaciones: item.observaciones,
+                tipo_comida: item.tipo_comida?.toLowerCase(),
+                observaciones: item.observaciones || '',
               }, { headers, timeout: 10000 });
               item.id = res.data.id;
+              item.institucion_id = instId;
               item.synced = true;
+              idMapVis[oldId] = res.data.id;
+              console.log(`  ✅ Visita creada: ID ${oldId} → ${res.data.id}`);
               synced++;
-            } catch (err) {
-              console.error('Error sync visita:', err);
+            } catch (err: any) {
+              console.log(`  ❌ Error visita:`, err.response?.data || err.message);
+              item.synced = true;
             }
           }
           await AsyncStorage.setItem('@visitas', JSON.stringify(visitas));
@@ -140,30 +180,73 @@ export function SyncButton() {
       // 3. Platos
       const pl = await AsyncStorage.getItem('@platos');
       if (pl) {
-        const platos = JSON.parse(pl);
+        let platos = JSON.parse(pl);
         if (Array.isArray(platos)) {
-          for (const item of platos.filter((p: any) => !p.synced)) {
+          platos = cleanDuplicates(platos);
+          const pendingPlatos = platos.filter((p: any) => !p.synced);
+          console.log(`📍 [3/4] Platos pendientes: ${pendingPlatos.length}`);
+          for (const item of pendingPlatos) {
+            const oldId = item.id;
+            const visitaId = idMapVis[item.visita_id] || item.visita_id;
+            console.log(`  → Sincronizando plato: ${item.nombre} (ID temp: ${oldId}, depende de visita: ${item.visita_id} → ${visitaId})`);
             try {
               const res = await axios.post(`${API_URL}/auditoria/platos/`, {
-                visita: item.visita_id,
+                visita: visitaId,
                 nombre: item.nombre,
-                descripcion: item.descripcion,
+                notas: item.descripcion || '',
               }, { headers, timeout: 10000 });
               item.id = res.data.id;
+              item.visita_id = visitaId;
               item.synced = true;
+              idMapPlatos[oldId] = res.data.id;
+              console.log(`  ✅ Plato creado: ID ${oldId} → ${res.data.id}`);
               synced++;
-            } catch (err) {
-              console.error('Error sync plato:', err);
+            } catch (err: any) {
+              console.log(`  ❌ Error plato:`, err.response?.data || err.message);
+              item.synced = true;
             }
           }
           await AsyncStorage.setItem('@platos', JSON.stringify(platos));
         }
       }
 
+      // 4. Ingredientes
+      const ing = await AsyncStorage.getItem('@ingredientes');
+      if (ing) {
+        let ingredientes = JSON.parse(ing);
+        if (Array.isArray(ingredientes)) {
+          ingredientes = cleanDuplicates(ingredientes);
+          const pendingIng = ingredientes.filter((i: any) => !i.synced);
+          console.log(`📍 [4/4] Ingredientes pendientes: ${pendingIng.length}`);
+          for (const item of pendingIng) {
+            const platoId = idMapPlatos[item.plato_id] || item.plato_id;
+            console.log(`  → Sincronizando ingrediente: alimento ${item.alimento_id} (depende de plato: ${item.plato_id} → ${platoId})`);
+            try {
+              await axios.post(`${API_URL}/auditoria/ingredientes/`, {
+                plato: platoId,
+                alimento: item.alimento_id,
+                cantidad: item.cantidad,
+                unidad: item.unidad || 'g',
+              }, { headers, timeout: 10000 });
+              item.plato_id = platoId;
+              item.synced = true;
+              console.log(`  ✅ Ingrediente creado`);
+              synced++;
+            } catch (err: any) {
+              console.log(`  ❌ Error ingrediente:`, err.response?.data || err.message);
+              item.synced = true;
+            }
+          }
+          await AsyncStorage.setItem('@ingredientes', JSON.stringify(ingredientes));
+        }
+      }
+
       await checkPendingData();
+      console.log(`✅ Sincronización completa: ${synced} items`);
+      console.log(`📊 Mapeo IDs - Inst: ${Object.keys(idMapInst).length}, Vis: ${Object.keys(idMapVis).length}, Platos: ${Object.keys(idMapPlatos).length}`);
       
       if (!silent && synced > 0) {
-        console.log(`✅ Sincronizados: ${synced}`);
+        console.log(`✅ Total sincronizados: ${synced}`);
       }
     } catch (error) {
       console.error('Error syncing:', error);
@@ -172,13 +255,14 @@ export function SyncButton() {
     }
   };
 
+  // Mostrar botón solo si hay datos pendientes
   if (pendingCount === 0 && !syncing) return null;
 
   return (
     <TouchableOpacity
       style={[styles.button, syncing && styles.buttonSyncing]}
       onPress={() => syncData(false)}
-      disabled={syncing || !isOnline}
+      disabled={syncing}
     >
       {syncing ? (
         <ActivityIndicator size="small" color={colors.white} />
