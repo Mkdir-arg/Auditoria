@@ -67,6 +67,16 @@ export function SyncButton() {
 
     try {
       setSyncing(true);
+      
+      // Verificar conexión real al backend
+      try {
+        await axios.get(`${API_URL}/`, { timeout: 3000 });
+      } catch (err) {
+        console.log('⚠️ Backend no disponible, reintentando después');
+        setSyncing(false);
+        return;
+      }
+      
       const token = await AsyncStorage.getItem('@auth_token');
       if (!token) {
         setSyncing(false);
