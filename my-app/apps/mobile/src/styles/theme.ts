@@ -21,7 +21,7 @@ export const colors = {
   black: '#000000',
 };
 
-export const spacing = {
+export const spacing: Record<string, number> = {
   xs: 4,
   sm: 8,
   md: 12,
@@ -31,7 +31,7 @@ export const spacing = {
   '3xl': 32,
 };
 
-export const fontSize = {
+export const fontSize: Record<string, number> = {
   xs: 12,
   sm: 14,
   base: 16,
