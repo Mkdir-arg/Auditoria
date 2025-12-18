@@ -17,14 +17,16 @@ export function VisitasScreen({ route, navigation }: any) {
   const loadData = async () => {
     const instituciones = await AsyncStorage.getItem('@instituciones');
     if (instituciones) {
-      const inst = JSON.parse(instituciones).find((i: any) => i.id === institucionId);
+      const instArray = JSON.parse(instituciones);
+      const inst = Array.isArray(instArray) ? instArray.find((i: any) => i.id === institucionId) : null;
       setInstitucion(inst);
     }
 
     const visitasData = await AsyncStorage.getItem('@visitas');
     if (visitasData) {
       const allVisitas = JSON.parse(visitasData);
-      setVisitas(allVisitas.filter((v: any) => v.institucion_id === institucionId));
+      const filtered = Array.isArray(allVisitas) ? allVisitas.filter((v: any) => v.institucion_id === institucionId) : [];
+      setVisitas(filtered);
     }
   };
 

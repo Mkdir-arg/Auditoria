@@ -28,9 +28,11 @@ export function AlimentosScreen({ navigation }: any) {
   const loadCategorias = async () => {
     try {
       const data = await nutricionService.getCategorias();
-      setCategorias(data.results || data);
+      const cats = Array.isArray(data?.results) ? data.results : Array.isArray(data) ? data : [];
+      setCategorias(cats);
     } catch (error) {
       console.error('Error loading categorias:', error);
+      setCategorias([]);
     }
   };
 
@@ -42,7 +44,8 @@ export function AlimentosScreen({ navigation }: any) {
       if (categoriaSeleccionada) params.categoria = categoriaSeleccionada;
 
       const data = await nutricionService.getAlimentos(params);
-      setAlimentos(data.results || data);
+      const alims = Array.isArray(data?.results) ? data.results : Array.isArray(data) ? data : [];
+      setAlimentos(alims);
     } catch (error) {
       console.error('Error loading alimentos:', error);
       Alert.alert('Error', 'No se pudieron cargar los alimentos');

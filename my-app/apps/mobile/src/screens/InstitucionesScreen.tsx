@@ -39,8 +39,9 @@ export function InstitucionesScreen({ navigation }: any) {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      await AsyncStorage.setItem('@instituciones', JSON.stringify(response.data));
-      setInstituciones(response.data);
+      const data = Array.isArray(response.data?.results) ? response.data.results : Array.isArray(response.data) ? response.data : [];
+      await AsyncStorage.setItem('@instituciones', JSON.stringify(data));
+      setInstituciones(data);
     } catch (error) {
       console.error('Error:', error);
     } finally {
@@ -69,10 +70,10 @@ export function InstitucionesScreen({ navigation }: any) {
     return colors[tipo] || '#f9fafb';
   };
 
-  const filteredData = instituciones.filter(inst =>
-    inst.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    inst.codigo?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredData = Array.isArray(instituciones) ? instituciones.filter(inst =>
+    inst?.nombre?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    inst?.codigo?.toLowerCase().includes(searchTerm.toLowerCase())
+  ) : [];
 
   const renderItem = ({ item }: any) => (
     <TouchableOpacity

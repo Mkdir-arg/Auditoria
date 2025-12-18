@@ -24,10 +24,12 @@ export function CategoriasScreen({ navigation }: any) {
     try {
       setLoading(true);
       const data = await nutricionService.getCategorias();
-      setCategorias(data.results || data);
+      const cats = Array.isArray(data?.results) ? data.results : Array.isArray(data) ? data : [];
+      setCategorias(cats);
     } catch (error) {
       console.error('Error loading categorias:', error);
       Alert.alert('Error', 'No se pudieron cargar las categorías');
+      setCategorias([]);
     } finally {
       setLoading(false);
     }
