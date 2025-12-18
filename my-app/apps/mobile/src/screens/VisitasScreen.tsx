@@ -86,7 +86,9 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: colors.white,
-    padding: spacing.lg,
+    paddingTop: spacing['3xl'],
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.lg,
     borderBottomWidth: 1,
     borderBottomColor: colors.gray[200],
   },

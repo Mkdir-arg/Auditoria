@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Card } from '../components/Card';
+import { SyncButton } from '../components/SyncButton';
 import { colors, spacing, fontSize, borderRadius } from '../styles/theme';
 
 export function HomeScreen({ navigation }: any) {
@@ -35,9 +36,12 @@ export function HomeScreen({ navigation }: any) {
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Panel Principal</Text>
-        <TouchableOpacity onPress={handleLogout}>
-          <Text style={styles.logoutText}>Salir</Text>
-        </TouchableOpacity>
+        <View style={styles.headerActions}>
+          <SyncButton />
+          <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
+            <Text style={styles.logoutText}>Salir</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       <View style={styles.content}>
@@ -164,12 +168,22 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: colors.white,
-    padding: spacing.lg,
+    paddingTop: spacing['3xl'],
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.lg,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     borderBottomWidth: 1,
     borderBottomColor: colors.gray[200],
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+  },
+  logoutButton: {
+    marginLeft: spacing.sm,
   },
   headerTitle: {
     fontSize: fontSize.xl,
