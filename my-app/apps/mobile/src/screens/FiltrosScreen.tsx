@@ -38,8 +38,8 @@ export function FiltrosScreen({ navigation }: any) {
         auditoriaService.getInstituciones(),
         auditoriaService.getVisitas(),
       ]);
-      setInstituciones(instData.results || instData);
-      setVisitas(visitasData.results || visitasData);
+      setInstituciones(Array.isArray(instData?.results) ? instData.results : Array.isArray(instData) ? instData : []);
+      setVisitas(Array.isArray(visitasData?.results) ? visitasData.results : Array.isArray(visitasData) ? visitasData : []);
     } catch (error) {
       console.error('Error loading data:', error);
       Alert.alert('Error', 'No se pudieron cargar los datos');
