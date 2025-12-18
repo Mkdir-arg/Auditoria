@@ -2,68 +2,26 @@ import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
-  FlatList,
+  ScrollView,
   TouchableOpacity,
   StyleSheet,
-  RefreshControl,
-  ActivityIndicator,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import axios from 'axios';
-import NetInfo from '@react-native-community/netinfo';
 import { Card } from '../components/Card';
-import { colors, spacing, fontSize } from '../styles/theme';
-
-const API_URL = 'http://192.168.1.204:8000/api';
+import { colors, spacing, fontSize, borderRadius } from '../styles/theme';
 
 export function HomeScreen({ navigation }: any) {
-  const [instituciones, setInstituciones] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [isOnline, setIsOnline] = useState(true);
+  const [username, setUsername] = useState('Usuario');
 
   useEffect(() => {
-    loadInstituciones();
-    
-    const unsubscribe = NetInfo.addEventListener(state => {
-      setIsOnline(state.isConnected ?? false);
-    });
-
-    return () => unsubscribe();
+    loadUser();
   }, []);
 
-  const loadInstituciones = async () => {
-    try {
-      // Cargar desde storage local
-      const cached = await AsyncStorage.getItem('@instituciones');
-      if (cached) {
-        setInstituciones(JSON.parse(cached));
-      }
-
-      // Si hay internet, sincronizar
-      const netInfo = await NetInfo.fetch();
-      if (netInfo.isConnected) {
-        await syncFromServer();
-      }
-    } catch (error) {
-      console.error('Error cargando instituciones:', error);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
-
-  const syncFromServer = async () => {
-    try {
-      const token = await AsyncStorage.getItem('@auth_token');
-      const response = await axios.get(`${API_URL}/auditoria/instituciones/`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      await AsyncStorage.setItem('@instituciones', JSON.stringify(response.data));
-      setInstituciones(response.data);
-    } catch (error) {
-      console.error('Error sincronizando:', error);
+  const loadUser = async () => {
+    const userData = await AsyncStorage.getItem('@user_data');
+    if (userData) {
+      const user = JSON.parse(userData);
+      setUsername(user.first_name || user.username || 'Usuario');
     }
   };
 
@@ -72,61 +30,130 @@ export function HomeScreen({ navigation }: any) {
     navigation.replace('Login');
   };
 
-  const renderItem = ({ item }: any) => (
-    <TouchableOpacity
-      onPress={() => navigation.navigate('Visitas', { institucionId: item.id })}
-    >
-      <Card style={styles.card}>
-        <Text style={styles.cardTitle}>{item.nombre}</Text>
-        <Text style={styles.cardSubtitle}>{item.tipo}</Text>
-        <Text style={styles.cardText}>{item.direccion}</Text>
-        {item.comuna && <Text style={styles.cardText}>Comuna: {item.comuna}</Text>}
-      </Card>
-    </TouchableOpacity>
-  );
-
-  if (loading) {
-    return (
-      <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color={colors.primary} />
-      </View>
-    );
-  }
-
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
+      {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Instituciones</Text>
+        <Text style={styles.headerTitle}>Panel Principal</Text>
         <TouchableOpacity onPress={handleLogout}>
           <Text style={styles.logoutText}>Salir</Text>
         </TouchableOpacity>
       </View>
 
-      {!isOnline && (
-        <View style={styles.offlineBanner}>
-          <Text style={styles.offlineText}>⚠️ Modo offline</Text>
+      <View style={styles.content}>
+        {/* Welcome Section */}
+        <View style={styles.welcomeCard}>
+          <Text style={styles.welcomeTitle}>¡Bienvenido, {username}! 👋</Text>
+          <Text style={styles.welcomeSubtitle}>
+            Panel de control principal del sistema de auditoría
+          </Text>
+          <View style={styles.badge}>
+            <Text style={styles.badgeText}>
+              Último acceso: {new Date().toLocaleDateString()}
+            </Text>
+          </View>
         </View>
-      )}
 
-      <FlatList
-        data={instituciones}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id.toString()}
-        contentContainerStyle={styles.list}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={() => {
-              setRefreshing(true);
-              loadInstituciones();
-            }}
-          />
-        }
-        ListEmptyComponent={
-          <Text style={styles.emptyText}>No hay instituciones registradas</Text>
-        }
-      />
-    </View>
+        {/* Stats Cards */}
+        <View style={styles.statsGrid}>
+          <Card style={[styles.statCard, styles.blueCard]}>
+            <Text style={styles.statEmoji}>📊</Text>
+            <Text style={styles.statTitle}>Métricas Generales</Text>
+            <Text style={styles.statSubtitle}>Resumen de actividades</Text>
+            <Text style={styles.statNumber}>125</Text>
+          </Card>
+
+          <Card style={[styles.statCard, styles.greenCard]}>
+            <Text style={styles.statEmoji}>✅</Text>
+            <Text style={styles.statTitle}>Auditorías Activas</Text>
+            <Text style={styles.statSubtitle}>Procesos en curso</Text>
+            <Text style={styles.statNumber}>8</Text>
+          </Card>
+
+          <Card style={[styles.statCard, styles.orangeCard]}>
+            <Text style={styles.statEmoji}>📋</Text>
+            <Text style={styles.statTitle}>Reportes Pendientes</Text>
+            <Text style={styles.statSubtitle}>Documentos por revisar</Text>
+            <Text style={styles.statNumber}>3</Text>
+          </Card>
+        </View>
+
+        {/* Quick Actions */}
+        <Card style={styles.actionsCard}>
+          <Text style={styles.sectionTitle}>🚀 Acciones Rápidas</Text>
+          <View style={styles.actionsGrid}>
+            <TouchableOpacity
+              style={[styles.actionButton, styles.blueAction]}
+              onPress={() => navigation.navigate('Visitas', { institucionId: 1 })}
+            >
+              <Text style={styles.actionEmoji}>📝</Text>
+              <Text style={styles.actionTitle}>Nueva Visita</Text>
+              <Text style={styles.actionSubtitle}>Registrar auditoría</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.actionButton, styles.greenAction]}
+              onPress={() => navigation.navigate('Instituciones')}
+            >
+              <Text style={styles.actionEmoji}>🏢</Text>
+              <Text style={styles.actionTitle}>Instituciones</Text>
+              <Text style={styles.actionSubtitle}>Gestionar instituciones</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.actionButton, styles.purpleAction]}
+              onPress={() => navigation.navigate('Usuarios')}
+            >
+              <Text style={styles.actionEmoji}>👥</Text>
+              <Text style={styles.actionTitle}>Usuarios</Text>
+              <Text style={styles.actionSubtitle}>Administrar accesos</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.actionButton, styles.grayAction]}
+              onPress={() => navigation.navigate('Reportes')}
+            >
+              <Text style={styles.actionEmoji}>📊</Text>
+              <Text style={styles.actionTitle}>Reportes</Text>
+              <Text style={styles.actionSubtitle}>Ver estadísticas</Text>
+            </TouchableOpacity>
+          </View>
+        </Card>
+
+        {/* Administration */}
+        <Card style={styles.actionsCard}>
+          <Text style={styles.sectionTitle}>⚙️ Administración</Text>
+          <View style={styles.actionsGrid}>
+            <TouchableOpacity
+              style={[styles.actionButton, styles.amberAction]}
+              onPress={() => navigation.navigate('Categorias')}
+            >
+              <Text style={styles.actionEmoji}>🏷️</Text>
+              <Text style={styles.actionTitle}>Categorías</Text>
+              <Text style={styles.actionSubtitle}>Gestionar categorías</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.actionButton, styles.tealAction]}
+              onPress={() => navigation.navigate('Alimentos')}
+            >
+              <Text style={styles.actionEmoji}>🍎</Text>
+              <Text style={styles.actionTitle}>Alimentos</Text>
+              <Text style={styles.actionSubtitle}>Catálogo Argenfood</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.actionButton, styles.slateAction]}
+              onPress={() => navigation.navigate('Configuracion')}
+            >
+              <Text style={styles.actionEmoji}>🔧</Text>
+              <Text style={styles.actionTitle}>Configuración</Text>
+              <Text style={styles.actionSubtitle}>Ajustes del sistema</Text>
+            </TouchableOpacity>
+          </View>
+        </Card>
+      </View>
+    </ScrollView>
   );
 }
 
@@ -134,11 +161,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.gray[100],
-  },
-  centerContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   header: {
     backgroundColor: colors.white,
@@ -158,41 +180,141 @@ const styles = StyleSheet.create({
     color: colors.danger,
     fontWeight: '600',
   },
-  offlineBanner: {
-    backgroundColor: '#fef3c7',
-    padding: spacing.md,
-  },
-  offlineText: {
-    color: '#92400e',
-    textAlign: 'center',
-    fontWeight: '600',
-  },
-  list: {
+  content: {
     padding: spacing.lg,
   },
-  card: {
+  welcomeCard: {
+    backgroundColor: '#eff6ff',
+    borderRadius: borderRadius.xl,
+    padding: spacing['2xl'],
+    borderWidth: 1,
+    borderColor: '#bfdbfe',
+    marginBottom: spacing.lg,
+  },
+  welcomeTitle: {
+    fontSize: fontSize['2xl'],
+    fontWeight: 'bold',
+    color: colors.gray[900],
+    marginBottom: spacing.sm,
+  },
+  welcomeSubtitle: {
+    fontSize: fontSize.base,
+    color: colors.gray[700],
+    marginBottom: spacing.lg,
+  },
+  badge: {
+    backgroundColor: '#dbeafe',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+    borderRadius: borderRadius.full,
+    alignSelf: 'flex-start',
+  },
+  badgeText: {
+    fontSize: fontSize.sm,
+    color: '#1d4ed8',
+  },
+  statsGrid: {
+    marginBottom: spacing.lg,
+  },
+  statCard: {
     marginBottom: spacing.md,
   },
-  cardTitle: {
-    fontSize: fontSize.lg,
+  blueCard: {
+    backgroundColor: '#eff6ff',
+    borderColor: '#bfdbfe',
+    borderWidth: 1,
+  },
+  greenCard: {
+    backgroundColor: '#f0fdf4',
+    borderColor: '#bbf7d0',
+    borderWidth: 1,
+  },
+  orangeCard: {
+    backgroundColor: '#fff7ed',
+    borderColor: '#fed7aa',
+    borderWidth: 1,
+  },
+  statEmoji: {
+    fontSize: 32,
+    marginBottom: spacing.sm,
+  },
+  statTitle: {
+    fontSize: fontSize.base,
     fontWeight: '600',
     color: colors.gray[900],
     marginBottom: spacing.xs,
   },
-  cardSubtitle: {
+  statSubtitle: {
     fontSize: fontSize.sm,
-    color: colors.gray[500],
+    color: colors.gray[600],
+    marginBottom: spacing.md,
+  },
+  statNumber: {
+    fontSize: fontSize['3xl'],
+    fontWeight: 'bold',
+    color: colors.primary,
+  },
+  actionsCard: {
+    marginBottom: spacing.lg,
+  },
+  sectionTitle: {
+    fontSize: fontSize.xl,
+    fontWeight: '600',
+    color: colors.gray[900],
+    marginBottom: spacing.lg,
+  },
+  actionsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.md,
+  },
+  actionButton: {
+    flex: 1,
+    minWidth: '45%',
+    padding: spacing.lg,
+    borderRadius: borderRadius.lg,
+    borderWidth: 1,
+  },
+  blueAction: {
+    backgroundColor: '#eff6ff',
+    borderColor: '#bfdbfe',
+  },
+  greenAction: {
+    backgroundColor: '#f0fdf4',
+    borderColor: '#bbf7d0',
+  },
+  purpleAction: {
+    backgroundColor: '#faf5ff',
+    borderColor: '#e9d5ff',
+  },
+  grayAction: {
+    backgroundColor: '#f9fafb',
+    borderColor: '#e5e7eb',
+  },
+  amberAction: {
+    backgroundColor: '#fffbeb',
+    borderColor: '#fde68a',
+  },
+  tealAction: {
+    backgroundColor: '#f0fdfa',
+    borderColor: '#99f6e4',
+  },
+  slateAction: {
+    backgroundColor: '#f8fafc',
+    borderColor: '#e2e8f0',
+  },
+  actionEmoji: {
+    fontSize: 24,
     marginBottom: spacing.sm,
   },
-  cardText: {
-    fontSize: fontSize.sm,
-    color: colors.gray[700],
+  actionTitle: {
+    fontSize: fontSize.base,
+    fontWeight: '600',
+    color: colors.gray[900],
     marginBottom: spacing.xs,
   },
-  emptyText: {
-    textAlign: 'center',
-    color: colors.gray[400],
-    marginTop: spacing['3xl'],
-    fontSize: fontSize.base,
+  actionSubtitle: {
+    fontSize: fontSize.sm,
+    color: colors.gray[600],
   },
 });
