@@ -49,9 +49,9 @@ export function FiltrosScreen({ navigation }: any) {
   };
 
   const applyFilters = () => {
-    let filtered = [...visitas];
+    let filtered = Array.isArray(visitas) ? [...visitas] : [];
 
-    if (tipoInstitucion) {
+    if (tipoInstitucion && Array.isArray(instituciones)) {
       const institucionesFiltered = instituciones
         .filter((i) => i.tipo === tipoInstitucion)
         .map((i) => i.id);
