@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { nutricionService } from '../services/nutricionService';
 import { Card } from '../components/Card';
 import { colors, spacing, fontSize, borderRadius } from '../styles/theme';
@@ -27,9 +28,22 @@ export function AlimentosScreen({ navigation }: any) {
 
   const loadCategorias = async () => {
     try {
-      const data = await nutricionService.getCategorias();
-      const cats = Array.isArray(data?.results) ? data.results : Array.isArray(data) ? data : [];
-      setCategorias(cats);
+      // Intentar desde AsyncStorage primero
+      const cached = await AsyncStorage.getItem('@categorias');
+      if (cached) {
+        const cats = JSON.parse(cached);
+        setCategorias(Array.isArray(cats) ? cats : []);
+      }
+      
+      // Intentar actualizar desde API
+      try {
+        const data = await nutricionService.getCategorias();
+        const cats = Array.isArray(data?.results) ? data.results : Array.isArray(data) ? data : [];
+        setCategorias(cats);
+        await AsyncStorage.setItem('@categorias', JSON.stringify(cats));
+      } catch (apiError) {
+        console.log('Modo offline - usando categorías cacheadas');
+      }
     } catch (error) {
       console.error('Error loading categorias:', error);
       setCategorias([]);
@@ -43,9 +57,23 @@ export function AlimentosScreen({ navigation }: any) {
       if (search) params.search = search;
       if (categoriaSeleccionada) params.categoria = categoriaSeleccionada;
 
-      const data = await nutricionService.getAlimentos(params);
-      const alims = Array.isArray(data?.results) ? data.results : Array.isArray(data) ? data : [];
-      setAlimentos(alims);
+      // Intentar desde AsyncStorage primero
+      const cacheKey = `@alimentos_${search}_${categoriaSeleccionada || 'all'}`;
+      const cached = await AsyncStorage.getItem(cacheKey);
+      if (cached) {
+        const alims = JSON.parse(cached);
+        setAlimentos(Array.isArray(alims) ? alims : []);
+      }
+      
+      // Intentar actualizar desde API
+      try {
+        const data = await nutricionService.getAlimentos(params);
+        const alims = Array.isArray(data?.results) ? data.results : Array.isArray(data) ? data : [];
+        setAlimentos(alims);
+        await AsyncStorage.setItem(cacheKey, JSON.stringify(alims));
+      } catch (apiError) {
+        console.log('Modo offline - usando alimentos cacheados');
+      }
     } catch (error) {
       console.error('Error loading alimentos:', error);
       Alert.alert('Error', 'No se pudieron cargar los alimentos');

@@ -34,15 +34,35 @@ export function FiltrosScreen({ navigation }: any) {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [instData, visitasData] = await Promise.all([
-        auditoriaService.getInstituciones(),
-        auditoriaService.getVisitas(),
-      ]);
-      setInstituciones(Array.isArray(instData?.results) ? instData.results : Array.isArray(instData) ? instData : []);
-      setVisitas(Array.isArray(visitasData?.results) ? visitasData.results : Array.isArray(visitasData) ? visitasData : []);
+      
+      // Intentar cargar desde AsyncStorage primero (offline)
+      const cachedInst = await AsyncStorage.getItem('@instituciones');
+      const cachedVisitas = await AsyncStorage.getItem('@visitas');
+      
+      if (cachedInst) {
+        const instArray = JSON.parse(cachedInst);
+        setInstituciones(Array.isArray(instArray) ? instArray : []);
+      }
+      if (cachedVisitas) {
+        const visitasArray = JSON.parse(cachedVisitas);
+        setVisitas(Array.isArray(visitasArray) ? visitasArray : []);
+      }
+      
+      // Intentar actualizar desde API (online)
+      try {
+        const [instData, visitasData] = await Promise.all([
+          auditoriaService.getInstituciones(),
+          auditoriaService.getVisitas(),
+        ]);
+        setInstituciones(Array.isArray(instData?.results) ? instData.results : Array.isArray(instData) ? instData : []);
+        setVisitas(Array.isArray(visitasData?.results) ? visitasData.results : Array.isArray(visitasData) ? visitasData : []);
+      } catch (apiError) {
+        console.log('Modo offline - usando datos cacheados');
+      }
     } catch (error) {
       console.error('Error loading data:', error);
-      Alert.alert('Error', 'No se pudieron cargar los datos');
+      setInstituciones([]);
+      setVisitas([]);
     } finally {
       setLoading(false);
     }

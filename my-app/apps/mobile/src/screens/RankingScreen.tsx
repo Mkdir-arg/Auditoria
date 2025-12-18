@@ -26,6 +26,7 @@ export function RankingScreen({ navigation }: any) {
       setRanking(data);
     } catch (error) {
       console.error('Error loading ranking:', error);
+      setRanking([]);
     } finally {
       setLoading(false);
     }

@@ -77,7 +77,7 @@ export function InstitucionesScreen({ navigation }: any) {
 
   const renderItem = ({ item }: any) => (
     <TouchableOpacity
-      onPress={() => navigation.navigate('Visitas', { institucionId: item.id })}
+      onPress={() => navigation.navigate('InstitucionDetalle', { institucionId: item.id })}
     >
       <Card style={[styles.card, { backgroundColor: getTipoColor(item.tipo) }]}>
         <View style={styles.cardHeader}>
@@ -133,6 +133,16 @@ export function InstitucionesScreen({ navigation }: any) {
         </View>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Text style={styles.backButton}>← Volver</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Add Button */}
+      <View style={styles.addButtonContainer}>
+        <TouchableOpacity
+          style={styles.addButton}
+          onPress={() => navigation.navigate('NuevaInstitucion')}
+        >
+          <Text style={styles.addButtonText}>+ Nueva Institución</Text>
         </TouchableOpacity>
       </View>
 
@@ -313,5 +323,20 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: fontSize.base,
     color: colors.gray[500],
+  },
+  addButtonContainer: {
+    padding: spacing.lg,
+    backgroundColor: colors.white,
+  },
+  addButton: {
+    backgroundColor: colors.primary,
+    padding: spacing.lg,
+    borderRadius: borderRadius.lg,
+    alignItems: 'center',
+  },
+  addButtonText: {
+    color: colors.white,
+    fontSize: fontSize.base,
+    fontWeight: '600',
   },
 });

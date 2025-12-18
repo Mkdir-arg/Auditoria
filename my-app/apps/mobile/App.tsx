@@ -1,4 +1,5 @@
 import React from 'react';
+import { SafeAreaView, StatusBar, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { LoginScreen } from './src/screens/LoginScreen';
@@ -17,33 +18,47 @@ import { UsuariosScreen } from './src/screens/UsuariosScreen';
 import { CategoriasScreen } from './src/screens/CategoriasScreen';
 import { ConfiguracionScreen } from './src/screens/ConfiguracionScreen';
 import { PerfilScreen } from './src/screens/PerfilScreen';
+import { NuevaInstitucionScreen } from './src/screens/NuevaInstitucionScreen';
+import { InstitucionDetalleScreen } from './src/screens/InstitucionDetalleScreen';
 
 const Stack = createNativeStackNavigator();
 
 export default function App() {
   return (
-    <NavigationContainer>
-      <Stack.Navigator
-        initialRouteName="Login"
-        screenOptions={{ headerShown: false }}
-      >
-        <Stack.Screen name="Login" component={LoginScreen} />
-        <Stack.Screen name="Home" component={HomeScreen} />
-        <Stack.Screen name="Instituciones" component={InstitucionesScreen} />
-        <Stack.Screen name="Visitas" component={VisitasScreen} />
-        <Stack.Screen name="NuevaVisita" component={NuevaVisitaScreen} />
-        <Stack.Screen name="DetalleVisita" component={DetalleVisitaScreen} />
-        <Stack.Screen name="Ingredientes" component={IngredientesScreen} />
-        <Stack.Screen name="BuscadorAlimentos" component={BuscadorAlimentosScreen} />
-        <Stack.Screen name="Alimentos" component={AlimentosScreen} />
-        <Stack.Screen name="Reportes" component={ReportesScreen} />
-        <Stack.Screen name="Ranking" component={RankingScreen} />
-        <Stack.Screen name="Filtros" component={FiltrosScreen} />
-        <Stack.Screen name="Usuarios" component={UsuariosScreen} />
-        <Stack.Screen name="Categorias" component={CategoriasScreen} />
-        <Stack.Screen name="Configuracion" component={ConfiguracionScreen} />
-        <Stack.Screen name="Perfil" component={PerfilScreen} />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
+      <NavigationContainer>
+        <Stack.Navigator
+          initialRouteName="Login"
+          screenOptions={{ headerShown: false }}
+        >
+          <Stack.Screen name="Login" component={LoginScreen} />
+          <Stack.Screen name="Home" component={HomeScreen} />
+          <Stack.Screen name="Instituciones" component={InstitucionesScreen} />
+          <Stack.Screen name="Visitas" component={VisitasScreen} />
+          <Stack.Screen name="NuevaVisita" component={NuevaVisitaScreen} />
+          <Stack.Screen name="DetalleVisita" component={DetalleVisitaScreen} />
+          <Stack.Screen name="Ingredientes" component={IngredientesScreen} />
+          <Stack.Screen name="BuscadorAlimentos" component={BuscadorAlimentosScreen} />
+          <Stack.Screen name="Alimentos" component={AlimentosScreen} />
+          <Stack.Screen name="Reportes" component={ReportesScreen} />
+          <Stack.Screen name="Ranking" component={RankingScreen} />
+          <Stack.Screen name="Filtros" component={FiltrosScreen} />
+          <Stack.Screen name="Usuarios" component={UsuariosScreen} />
+          <Stack.Screen name="Categorias" component={CategoriasScreen} />
+          <Stack.Screen name="Configuracion" component={ConfiguracionScreen} />
+          <Stack.Screen name="Perfil" component={PerfilScreen} />
+          <Stack.Screen name="NuevaInstitucion" component={NuevaInstitucionScreen} />
+          <Stack.Screen name="InstitucionDetalle" component={InstitucionDetalleScreen} />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#ffffff',
+  },
+});

@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { nutricionService } from '../services/nutricionService';
 import { Card } from '../components/Card';
 import { colors, spacing, fontSize, borderRadius } from '../styles/theme';
@@ -23,12 +24,25 @@ export function CategoriasScreen({ navigation }: any) {
   const loadCategorias = async () => {
     try {
       setLoading(true);
-      const data = await nutricionService.getCategorias();
-      const cats = Array.isArray(data?.results) ? data.results : Array.isArray(data) ? data : [];
-      setCategorias(cats);
+      
+      // Intentar desde AsyncStorage primero
+      const cached = await AsyncStorage.getItem('@categorias');
+      if (cached) {
+        const cats = JSON.parse(cached);
+        setCategorias(Array.isArray(cats) ? cats : []);
+      }
+      
+      // Intentar actualizar desde API
+      try {
+        const data = await nutricionService.getCategorias();
+        const cats = Array.isArray(data?.results) ? data.results : Array.isArray(data) ? data : [];
+        setCategorias(cats);
+        await AsyncStorage.setItem('@categorias', JSON.stringify(cats));
+      } catch (apiError) {
+        console.log('Modo offline - usando categorías cacheadas');
+      }
     } catch (error) {
       console.error('Error loading categorias:', error);
-      Alert.alert('Error', 'No se pudieron cargar las categorías');
       setCategorias([]);
     } finally {
       setLoading(false);

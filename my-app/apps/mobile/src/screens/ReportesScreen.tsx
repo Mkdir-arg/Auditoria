@@ -26,6 +26,15 @@ export function ReportesScreen({ navigation }: any) {
       setDashboard(data);
     } catch (error) {
       console.error('Error loading dashboard:', error);
+      // Datos mock offline
+      setDashboard({
+        total_instituciones: 0,
+        total_visitas: 0,
+        total_platos: 0,
+        promedio_platos_por_visita: 0,
+        visitas_por_tipo: [],
+        instituciones_por_tipo: [],
+      });
     } finally {
       setLoading(false);
     }
