@@ -6,9 +6,12 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from '@react-native-community/netinfo';
-import { syncService } from '../services/syncService';
+import axios from 'axios';
 import { colors, spacing } from '../styles/theme';
+
+const API_URL = 'http://10.0.2.2:8000/api';
 
 export function SyncButton() {
   const [pendingCount, setPendingCount] = useState(0);
@@ -40,7 +43,19 @@ export function SyncButton() {
 
   const checkPendingData = async () => {
     try {
-      const count = await syncService.getPendingCount();
+      let count = 0;
+      const keys = ['@instituciones', '@visitas', '@platos', '@ingredientes'];
+      
+      for (const key of keys) {
+        const data = await AsyncStorage.getItem(key);
+        if (data) {
+          const items = JSON.parse(data);
+          if (Array.isArray(items)) {
+            count += items.filter((i: any) => i.synced === false).length;
+          }
+        }
+      }
+      
       setPendingCount(count);
     } catch (error) {
       console.error('Error checking pending data:', error);
@@ -52,20 +67,96 @@ export function SyncButton() {
 
     try {
       setSyncing(true);
-      const result = await syncService.syncAll();
-      
+      const token = await AsyncStorage.getItem('@auth_token');
+      if (!token) {
+        setSyncing(false);
+        return;
+      }
+
+      const headers = { Authorization: `Bearer ${token}` };
+      let synced = 0;
+
+      // 1. Instituciones
+      const inst = await AsyncStorage.getItem('@instituciones');
+      if (inst) {
+        const instituciones = JSON.parse(inst);
+        if (Array.isArray(instituciones)) {
+          for (const item of instituciones.filter((i: any) => !i.synced)) {
+            try {
+              const res = await axios.post(`${API_URL}/auditoria/instituciones/`, {
+                codigo: item.codigo,
+                nombre: item.nombre,
+                tipo: item.tipo,
+                direccion: item.direccion,
+                barrio: item.barrio,
+                comuna: item.comuna,
+                activo: item.activo,
+              }, { headers, timeout: 10000 });
+              item.id = res.data.id;
+              item.synced = true;
+              synced++;
+            } catch (err) {
+              console.error('Error sync inst:', err);
+            }
+          }
+          await AsyncStorage.setItem('@instituciones', JSON.stringify(instituciones));
+        }
+      }
+
+      // 2. Visitas
+      const vis = await AsyncStorage.getItem('@visitas');
+      if (vis) {
+        const visitas = JSON.parse(vis);
+        if (Array.isArray(visitas)) {
+          for (const item of visitas.filter((v: any) => !v.synced)) {
+            try {
+              const res = await axios.post(`${API_URL}/auditoria/visitas/`, {
+                institucion: item.institucion_id,
+                fecha: item.fecha,
+                tipo_comida: item.tipo_comida,
+                observaciones: item.observaciones,
+              }, { headers, timeout: 10000 });
+              item.id = res.data.id;
+              item.synced = true;
+              synced++;
+            } catch (err) {
+              console.error('Error sync visita:', err);
+            }
+          }
+          await AsyncStorage.setItem('@visitas', JSON.stringify(visitas));
+        }
+      }
+
+      // 3. Platos
+      const pl = await AsyncStorage.getItem('@platos');
+      if (pl) {
+        const platos = JSON.parse(pl);
+        if (Array.isArray(platos)) {
+          for (const item of platos.filter((p: any) => !p.synced)) {
+            try {
+              const res = await axios.post(`${API_URL}/auditoria/platos/`, {
+                visita: item.visita_id,
+                nombre: item.nombre,
+                descripcion: item.descripcion,
+              }, { headers, timeout: 10000 });
+              item.id = res.data.id;
+              item.synced = true;
+              synced++;
+            } catch (err) {
+              console.error('Error sync plato:', err);
+            }
+          }
+          await AsyncStorage.setItem('@platos', JSON.stringify(platos));
+        }
+      }
+
       await checkPendingData();
       
-      // Solo mostrar mensaje si es manual (no silencioso)
-      if (!silent && result.synced > 0) {
-        console.log(`✅ Sincronizados: ${result.synced} elementos`);
-      }
-      
-      if (!silent && result.failed > 0) {
-        console.error(`❌ Fallaron: ${result.failed} elementos`);
+      if (!silent && synced > 0) {
+        console.log(`✅ Sincronizados: ${synced}`);
       }
     } catch (error) {
-      console.error('Error syncing data:', error);
+      console.error('Error syncing:', error);
     } finally {
       setSyncing(false);
     }
