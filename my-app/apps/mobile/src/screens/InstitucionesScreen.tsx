@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
   RefreshControl,
   Alert,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { clearAllData } from '../utils/clearStorage';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
@@ -24,15 +25,11 @@ export function InstitucionesScreen({ navigation, route }: any) {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    loadInstituciones();
-  }, []);
-  
-  useEffect(() => {
-    if (route.params?.refresh) {
+  useFocusEffect(
+    useCallback(() => {
       loadInstituciones();
-    }
-  }, [route.params?.refresh]);
+    }, [])
+  );
 
   const loadInstituciones = async () => {
     try {

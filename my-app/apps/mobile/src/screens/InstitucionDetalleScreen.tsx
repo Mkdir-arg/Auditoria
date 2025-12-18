@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Card } from '../components/Card';
 import { colors, spacing, fontSize, borderRadius } from '../styles/theme';
@@ -15,9 +16,11 @@ export function InstitucionDetalleScreen({ route, navigation }: any) {
   const [institucion, setInstitucion] = useState<any>(null);
   const [visitas, setVisitas] = useState<any[]>([]);
 
-  useEffect(() => {
-    loadData();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      loadData();
+    }, [institucionId])
+  );
 
   const loadData = async () => {
     const instituciones = await AsyncStorage.getItem('@instituciones');

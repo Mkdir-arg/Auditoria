@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
   TextInput,
   Alert,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Card } from '../components/Card';
 import { Button } from '../components/Button';
@@ -22,10 +23,14 @@ export function DetalleVisitaScreen({ route, navigation }: any) {
   const [modalVisible, setModalVisible] = useState(false);
   const [nombrePlato, setNombrePlato] = useState('');
   const [descripcionPlato, setDescripcionPlato] = useState('');
+  const [tipoPlato, setTipoPlato] = useState('principal');
+  const [porcionesServidas, setPorcionesServidas] = useState('');
 
-  useEffect(() => {
-    loadData();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      loadData();
+    }, [visitaId])
+  );
 
   const loadData = async () => {
     const visitasData = await AsyncStorage.getItem('@visitas');
@@ -53,6 +58,8 @@ export function DetalleVisitaScreen({ route, navigation }: any) {
       visita_id: visitaId,
       nombre: nombrePlato,
       descripcion: descripcionPlato,
+      tipo_plato: tipoPlato,
+      porciones_servidas: porcionesServidas ? Number(porcionesServidas) : null,
       synced: false,
     };
 
@@ -63,8 +70,33 @@ export function DetalleVisitaScreen({ route, navigation }: any) {
 
     setNombrePlato('');
     setDescripcionPlato('');
+    setTipoPlato('principal');
+    setPorcionesServidas('');
     setModalVisible(false);
     loadData();
+  };
+
+  const handleEliminarPlato = async (platoId: number) => {
+    Alert.alert(
+      'Eliminar Plato',
+      '¿Está seguro de eliminar este plato?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Eliminar',
+          style: 'destructive',
+          onPress: async () => {
+            const platosData = await AsyncStorage.getItem('@platos');
+            if (platosData) {
+              const allPlatos = JSON.parse(platosData);
+              const filtered = allPlatos.filter((p: any) => p.id !== platoId);
+              await AsyncStorage.setItem('@platos', JSON.stringify(filtered));
+              loadData();
+            }
+          },
+        },
+      ]
+    );
   };
 
   if (!visita) return null;
@@ -94,6 +126,22 @@ export function DetalleVisitaScreen({ route, navigation }: any) {
           )}
         </Card>
 
+        <View style={styles.formularioSection}>
+          <TouchableOpacity
+            style={styles.formularioButton}
+            onPress={() => navigation.navigate('Formulario', { visitaId })}
+          >
+            <Text style={styles.formularioIcon}>📋</Text>
+            <View style={styles.formularioTextContainer}>
+              <Text style={styles.formularioTitle}>Formulario de Relevamiento</Text>
+              <Text style={styles.formularioSubtitle}>
+                {visita.formulario_completado ? '✅ Completado' : '⏳ Pendiente'}
+              </Text>
+            </View>
+            <Text style={styles.formularioArrow}>→</Text>
+          </TouchableOpacity>
+        </View>
+
         <View style={styles.platosSection}>
           <View style={styles.platosSectionHeader}>
             <Text style={styles.sectionTitle}>🍽️ Platos Observados</Text>
@@ -109,21 +157,36 @@ export function DetalleVisitaScreen({ route, navigation }: any) {
             <Text style={styles.emptyText}>No hay platos registrados</Text>
           ) : (
             platos.map((plato) => (
-              <TouchableOpacity
-                key={plato.id}
-                onPress={() => navigation.navigate('Ingredientes', { platoId: plato.id })}
-              >
-                <Card style={styles.platoCard}>
+              <Card key={plato.id} style={styles.platoCard}>
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('Ingredientes', { platoId: plato.id })}
+                >
                   <View style={styles.platoHeader}>
-                    <Text style={styles.platoNombre}>{plato.nombre}</Text>
+                    <View style={styles.platoTitleContainer}>
+                      <Text style={styles.platoNombre}>{plato.nombre}</Text>
+                      {plato.tipo_plato && (
+                        <View style={styles.tipoBadge}>
+                          <Text style={styles.tipoBadgeText}>{plato.tipo_plato}</Text>
+                        </View>
+                      )}
+                    </View>
                     <Text style={styles.platoArrow}>→</Text>
                   </View>
+                  {plato.porciones_servidas && (
+                    <Text style={styles.platoPorciones}>🍽️ {plato.porciones_servidas} porciones</Text>
+                  )}
                   {plato.descripcion && (
                     <Text style={styles.platoDescripcion}>{plato.descripcion}</Text>
                   )}
                   <Text style={styles.platoHint}>Toca para agregar ingredientes</Text>
-                </Card>
-              </TouchableOpacity>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.deleteButton}
+                  onPress={() => handleEliminarPlato(plato.id)}
+                >
+                  <Text style={styles.deleteButtonText}>🗑️ Eliminar</Text>
+                </TouchableOpacity>
+              </Card>
             ))
           )}
         </View>
@@ -143,6 +206,46 @@ export function DetalleVisitaScreen({ route, navigation }: any) {
               placeholder="Nombre del plato *"
               value={nombrePlato}
               onChangeText={setNombrePlato}
+              style={styles.modalInput}
+            />
+
+            <View style={styles.modalInput}>
+              <Text style={styles.modalLabel}>Tipo de Plato</Text>
+              <View style={styles.tipoGrid}>
+                {[
+                  { value: 'principal', label: 'Principal', icon: '🍲' },
+                  { value: 'guarnicion', label: 'Guarnición', icon: '🥗' },
+                  { value: 'postre', label: 'Postre', icon: '🍰' },
+                  { value: 'bebida', label: 'Bebida', icon: '🥤' },
+                  { value: 'otro', label: 'Otro', icon: '🍽️' },
+                ].map((tipo) => (
+                  <TouchableOpacity
+                    key={tipo.value}
+                    style={[
+                      styles.tipoChip,
+                      tipoPlato === tipo.value && styles.tipoChipActive,
+                    ]}
+                    onPress={() => setTipoPlato(tipo.value)}
+                  >
+                    <Text style={styles.tipoIcon}>{tipo.icon}</Text>
+                    <Text
+                      style={[
+                        styles.tipoText,
+                        tipoPlato === tipo.value && styles.tipoTextActive,
+                      ]}
+                    >
+                      {tipo.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+
+            <Input
+              placeholder="Porciones servidas"
+              value={porcionesServidas}
+              onChangeText={setPorcionesServidas}
+              keyboardType="numeric"
               style={styles.modalInput}
             />
 
@@ -248,14 +351,35 @@ const styles = StyleSheet.create({
   platoHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
+  },
+  platoTitleContainer: {
+    flex: 1,
   },
   platoNombre: {
     fontSize: fontSize.base,
     fontWeight: '600',
     color: colors.gray[900],
     marginBottom: spacing.xs,
-    flex: 1,
+  },
+  tipoBadge: {
+    backgroundColor: colors.blue[100],
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderRadius: borderRadius.full,
+    alignSelf: 'flex-start',
+    marginBottom: spacing.xs,
+  },
+  tipoBadgeText: {
+    fontSize: fontSize.xs,
+    color: colors.blue[700],
+    fontWeight: '600',
+    textTransform: 'capitalize',
+  },
+  platoPorciones: {
+    fontSize: fontSize.sm,
+    color: colors.gray[600],
+    marginBottom: spacing.xs,
   },
   platoArrow: {
     fontSize: fontSize.xl,
@@ -271,10 +395,62 @@ const styles = StyleSheet.create({
     color: colors.gray[400],
     fontStyle: 'italic',
   },
+  deleteButton: {
+    marginTop: spacing.md,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    backgroundColor: colors.danger,
+    borderRadius: borderRadius.md,
+    alignItems: 'center',
+  },
+  deleteButtonText: {
+    color: colors.white,
+    fontSize: fontSize.sm,
+    fontWeight: '600',
+  },
   emptyText: {
     textAlign: 'center',
     color: colors.gray[400],
     marginTop: spacing.xl,
+  },
+  formularioSection: {
+    paddingHorizontal: spacing.lg,
+    marginBottom: spacing.lg,
+  },
+  formularioButton: {
+    backgroundColor: colors.white,
+    padding: spacing.lg,
+    borderRadius: borderRadius.lg,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: colors.primary,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  formularioIcon: {
+    fontSize: 32,
+    marginRight: spacing.md,
+  },
+  formularioTextContainer: {
+    flex: 1,
+  },
+  formularioTitle: {
+    fontSize: fontSize.base,
+    fontWeight: '600',
+    color: colors.gray[900],
+    marginBottom: spacing.xs,
+  },
+  formularioSubtitle: {
+    fontSize: fontSize.sm,
+    color: colors.gray[600],
+  },
+  formularioArrow: {
+    fontSize: fontSize.xl,
+    color: colors.primary,
   },
   modalOverlay: {
     flex: 1,
@@ -295,6 +471,44 @@ const styles = StyleSheet.create({
   },
   modalInput: {
     marginBottom: spacing.md,
+  },
+  modalLabel: {
+    fontSize: fontSize.sm,
+    fontWeight: '600',
+    color: colors.gray[700],
+    marginBottom: spacing.sm,
+  },
+  tipoGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+  },
+  tipoChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.gray[100],
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: borderRadius.lg,
+    borderWidth: 2,
+    borderColor: colors.gray[200],
+  },
+  tipoChipActive: {
+    backgroundColor: colors.blue[50],
+    borderColor: colors.primary,
+  },
+  tipoIcon: {
+    fontSize: 18,
+    marginRight: spacing.xs,
+  },
+  tipoText: {
+    fontSize: fontSize.xs,
+    color: colors.gray[700],
+    fontWeight: '500',
+  },
+  tipoTextActive: {
+    color: colors.primary,
+    fontWeight: '600',
   },
   modalButtons: {
     flexDirection: 'row',

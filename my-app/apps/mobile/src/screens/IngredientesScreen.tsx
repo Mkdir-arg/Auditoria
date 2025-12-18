@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Alert,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Card } from '../components/Card';
 import { colors, spacing, fontSize, borderRadius } from '../styles/theme';
@@ -16,9 +17,11 @@ export function IngredientesScreen({ route, navigation }: any) {
   const [plato, setPlato] = useState<any>(null);
   const [ingredientes, setIngredientes] = useState<any[]>([]);
 
-  useEffect(() => {
-    loadData();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      loadData();
+    }, [platoId])
+  );
 
   const loadData = async () => {
     const platosData = await AsyncStorage.getItem('@platos');

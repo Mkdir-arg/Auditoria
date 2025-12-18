@@ -8,6 +8,7 @@ import {
   Platform,
   ScrollView,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { Input } from '../components/Input';
@@ -49,19 +50,30 @@ export function LoginScreen({ navigation }: any) {
   };
 
   return (
-    <KeyboardAvoidingView
+    <LinearGradient
+      colors={['#3b82f6', '#9333ea']}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled"
+      <KeyboardAvoidingView
+        style={styles.keyboardView}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        {/* Logo/Icon */}
-        <View style={styles.logoContainer}>
-          <View style={styles.iconCircle}>
-            <Text style={styles.iconEmoji}>🍎</Text>
-          </View>
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+        >
+          {/* Logo/Icon */}
+          <View style={styles.logoContainer}>
+            <LinearGradient
+              colors={['#6366f1', '#a855f7']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.iconCircle}
+            >
+              <Text style={styles.iconEmoji}>🍎</Text>
+            </LinearGradient>
           <Text style={styles.welcomeTitle}>Bienvenido</Text>
           <Text style={styles.welcomeSubtitle}>Ingresa tus credenciales para continuar</Text>
         </View>
@@ -98,24 +110,35 @@ export function LoginScreen({ navigation }: any) {
           ) : null}
 
           {/* Login Button */}
-          <Button
-            title={loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
-            onPress={handleLogin}
-            loading={loading}
-          />
+          <LinearGradient
+            colors={['#3b82f6', '#9333ea']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.loginButtonGradient}
+          >
+            <Button
+              title={loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+              onPress={handleLogin}
+              loading={loading}
+              style={styles.buttonTransparent}
+            />
+          </LinearGradient>
         </View>
 
-        {/* Footer */}
-        <Text style={styles.footer}>Sistema de Auditoría Nutricional</Text>
-      </ScrollView>
-    </KeyboardAvoidingView>
+          {/* Footer */}
+          <Text style={styles.footer}>Sistema de Auditoría Nutricional</Text>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafb', // from-gray-50 to-gray-100
+  },
+  keyboardView: {
+    flex: 1,
   },
   scrollContent: {
     flexGrow: 1,
@@ -130,7 +153,6 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 20,
-    backgroundColor: colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: spacing.lg,
@@ -146,12 +168,12 @@ const styles = StyleSheet.create({
   welcomeTitle: {
     fontSize: fontSize['3xl'],
     fontWeight: 'bold',
-    color: colors.gray[800],
+    color: colors.white,
     marginBottom: spacing.sm,
   },
   welcomeSubtitle: {
     fontSize: fontSize.base,
-    color: colors.gray[600],
+    color: '#e9d5ff', // Violeta claro
     textAlign: 'center',
   },
   formCard: {
@@ -184,6 +206,18 @@ const styles = StyleSheet.create({
   errorText: {
     fontSize: fontSize.sm,
     color: '#b91c1c',
+  },
+  loginButtonGradient: {
+    borderRadius: borderRadius.lg,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+    overflow: 'hidden',
+  },
+  buttonTransparent: {
+    backgroundColor: 'transparent',
   },
   footer: {
     textAlign: 'center',

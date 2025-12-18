@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Card } from '../components/Card';
 import { Button } from '../components/Button';
@@ -10,9 +11,11 @@ export function VisitasScreen({ route, navigation }: any) {
   const [visitas, setVisitas] = useState<any[]>([]);
   const [institucion, setInstitucion] = useState<any>(null);
 
-  useEffect(() => {
-    loadData();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      loadData();
+    }, [institucionId])
+  );
 
   const loadData = async () => {
     const instituciones = await AsyncStorage.getItem('@instituciones');
