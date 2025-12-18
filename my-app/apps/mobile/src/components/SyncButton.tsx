@@ -24,19 +24,34 @@ export function SyncButton() {
     checkPendingData();
     
     // Verificar cada 5 segundos si hay datos pendientes
-    const interval = setInterval(checkPendingData, 5000);
+    const interval = setInterval(() => {
+      checkPendingData();
+      // Auto-sync si hay internet y datos pendientes
+      if (isOnline && pendingCount > 0 && !syncing) {
+        syncData(true);
+      }
+    }, 5000);
     
     // Listener de conexión
     const unsubscribe = NetInfo.addEventListener(state => {
       const connected = state.isConnected || false;
       setIsOnline(connected);
+      
+      // Auto-sync cuando se conecta
+      if (connected && !syncing) {
+        setTimeout(() => {
+          checkPendingData().then(() => {
+            if (pendingCount > 0) syncData(true);
+          });
+        }, 1000);
+      }
     });
     
     return () => {
       clearInterval(interval);
       unsubscribe();
     };
-  }, []);
+  }, [isOnline, pendingCount, syncing]);
 
   const checkPendingData = async () => {
     try {
@@ -255,8 +270,9 @@ export function SyncButton() {
     }
   };
 
-  // Mostrar botón solo si hay datos pendientes
+  // Mostrar botón solo si hay datos pendientes Y no hay internet
   if (pendingCount === 0 && !syncing) return null;
+  if (isOnline && !syncing) return null; // Con internet, auto-sync
 
   return (
     <TouchableOpacity
