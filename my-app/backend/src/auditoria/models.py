@@ -196,6 +196,7 @@ class PlatoObservado(models.Model):
     )
     porciones_servidas = models.IntegerField(null=True, blank=True)
     notas = models.TextField(null=True, blank=True)
+    imagen = models.ImageField(upload_to='platos/', null=True, blank=True)
 
     # Totales comunes
     energia_kcal_total = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
