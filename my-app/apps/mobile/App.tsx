@@ -20,6 +20,7 @@ import { ConfiguracionScreen } from './src/screens/ConfiguracionScreen';
 import { PerfilScreen } from './src/screens/PerfilScreen';
 import { NuevaInstitucionScreen } from './src/screens/NuevaInstitucionScreen';
 import { InstitucionDetalleScreen } from './src/screens/InstitucionDetalleScreen';
+import { FormularioScreen } from './src/screens/FormularioScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -50,6 +51,7 @@ export default function App() {
           <Stack.Screen name="Perfil" component={PerfilScreen} />
           <Stack.Screen name="NuevaInstitucion" component={NuevaInstitucionScreen} />
           <Stack.Screen name="InstitucionDetalle" component={InstitucionDetalleScreen} />
+          <Stack.Screen name="Formulario" component={FormularioScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaView>

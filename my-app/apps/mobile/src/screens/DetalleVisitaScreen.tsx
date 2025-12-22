@@ -8,9 +8,11 @@ import {
   Modal,
   TextInput,
   Alert,
+  Image,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as ImagePicker from 'expo-image-picker';
 import { Card } from '../components/Card';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
@@ -25,6 +27,7 @@ export function DetalleVisitaScreen({ route, navigation }: any) {
   const [descripcionPlato, setDescripcionPlato] = useState('');
   const [tipoPlato, setTipoPlato] = useState('principal');
   const [porcionesServidas, setPorcionesServidas] = useState('');
+  const [imagenUri, setImagenUri] = useState<string | null>(null);
 
   useFocusEffect(
     useCallback(() => {
@@ -47,6 +50,24 @@ export function DetalleVisitaScreen({ route, navigation }: any) {
     }
   };
 
+  const tomarFoto = async () => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permiso denegado', 'Se necesita acceso a la cámara');
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 0.5,
+    });
+
+    if (!result.canceled) {
+      setImagenUri(result.assets[0].uri);
+    }
+  };
+
   const handleAgregarPlato = async () => {
     if (!nombrePlato.trim()) {
       Alert.alert('Error', 'Ingrese el nombre del plato');
@@ -60,6 +81,7 @@ export function DetalleVisitaScreen({ route, navigation }: any) {
       descripcion: descripcionPlato,
       tipo_plato: tipoPlato,
       porciones_servidas: porcionesServidas ? Number(porcionesServidas) : null,
+      imagen: imagenUri,
       synced: false,
     };
 
@@ -72,6 +94,7 @@ export function DetalleVisitaScreen({ route, navigation }: any) {
     setDescripcionPlato('');
     setTipoPlato('principal');
     setPorcionesServidas('');
+    setImagenUri(null);
     setModalVisible(false);
     loadData();
   };
@@ -180,12 +203,45 @@ export function DetalleVisitaScreen({ route, navigation }: any) {
                   )}
                   <Text style={styles.platoHint}>Toca para agregar ingredientes</Text>
                 </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.deleteButton}
-                  onPress={() => handleEliminarPlato(plato.id)}
-                >
-                  <Text style={styles.deleteButtonText}>🗑️ Eliminar</Text>
-                </TouchableOpacity>
+                
+                {plato.imagen && (
+                  <Image source={{ uri: plato.imagen }} style={styles.platoImagen} />
+                )}
+                
+                <View style={styles.platoActions}>
+                  <TouchableOpacity
+                    style={styles.cameraButtonSmall}
+                    onPress={async () => {
+                      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+                      if (status !== 'granted') {
+                        Alert.alert('Permiso denegado', 'Se necesita acceso a la cámara');
+                        return;
+                      }
+                      const result = await ImagePicker.launchCameraAsync({
+                        allowsEditing: true,
+                        aspect: [4, 3],
+                        quality: 0.5,
+                      });
+                      if (!result.canceled) {
+                        plato.imagen = result.assets[0].uri;
+                        const platosData = await AsyncStorage.getItem('@platos');
+                        if (platosData) {
+                          const allPlatos = JSON.parse(platosData);
+                          await AsyncStorage.setItem('@platos', JSON.stringify(allPlatos));
+                          loadData();
+                        }
+                      }
+                    }}
+                  >
+                    <Text style={styles.cameraButtonSmallText}>📷 Foto</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.deleteButton}
+                    onPress={() => handleEliminarPlato(plato.id)}
+                  >
+                    <Text style={styles.deleteButtonText}>🗑️ Eliminar</Text>
+                  </TouchableOpacity>
+                </View>
               </Card>
             ))
           )}
@@ -208,6 +264,23 @@ export function DetalleVisitaScreen({ route, navigation }: any) {
               onChangeText={setNombrePlato}
               style={styles.modalInput}
             />
+
+            {/* Botón de Cámara */}
+            <TouchableOpacity
+              style={styles.cameraButton}
+              onPress={tomarFoto}
+            >
+              <Text style={styles.cameraIcon}>📷</Text>
+              <Text style={styles.cameraText}>
+                {imagenUri ? 'Cambiar foto' : 'Tomar foto del plato'}
+              </Text>
+            </TouchableOpacity>
+            {imagenUri && (
+              <View style={styles.imagePreviewContainer}>
+                <Image source={{ uri: imagenUri }} style={styles.imagePreview} />
+                <Text style={styles.imagePreviewText}>✅ Foto capturada</Text>
+              </View>
+            )}
 
             <View style={styles.modalInput}>
               <Text style={styles.modalLabel}>Tipo de Plato</Text>
@@ -395,8 +468,26 @@ const styles = StyleSheet.create({
     color: colors.gray[400],
     fontStyle: 'italic',
   },
-  deleteButton: {
+  platoActions: {
+    flexDirection: 'row',
+    gap: spacing.sm,
     marginTop: spacing.md,
+  },
+  cameraButtonSmall: {
+    flex: 1,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    backgroundColor: colors.primary,
+    borderRadius: borderRadius.md,
+    alignItems: 'center',
+  },
+  cameraButtonSmallText: {
+    color: colors.white,
+    fontSize: fontSize.sm,
+    fontWeight: '600',
+  },
+  deleteButton: {
+    flex: 1,
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
     backgroundColor: colors.danger,
@@ -509,6 +600,47 @@ const styles = StyleSheet.create({
   tipoTextActive: {
     color: colors.primary,
     fontWeight: '600',
+  },
+  cameraButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.blue[50],
+    borderWidth: 2,
+    borderColor: colors.primary,
+    borderStyle: 'dashed',
+    padding: spacing.lg,
+    borderRadius: borderRadius.lg,
+    marginBottom: spacing.md,
+  },
+  cameraIcon: {
+    fontSize: 24,
+    marginRight: spacing.sm,
+  },
+  cameraText: {
+    fontSize: fontSize.base,
+    color: colors.primary,
+    fontWeight: '600',
+  },
+  imagePreviewContainer: {
+    alignItems: 'center',
+    marginBottom: spacing.md,
+  },
+  imagePreview: {
+    width: 200,
+    height: 150,
+    borderRadius: borderRadius.lg,
+    marginBottom: spacing.sm,
+  },
+  imagePreviewText: {
+    fontSize: fontSize.sm,
+    color: colors.success,
+  },
+  platoImagen: {
+    width: '100%',
+    height: 150,
+    borderRadius: borderRadius.lg,
+    marginTop: spacing.sm,
   },
   modalButtons: {
     flexDirection: 'row',
