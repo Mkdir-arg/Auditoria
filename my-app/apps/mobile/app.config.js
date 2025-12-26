@@ -1,8 +1,8 @@
 export default {
   expo: {
     name: "Auditoria Nutricional",
-    slug: "auditoria-android-test",
-    owner: "pablocao",
+    slug: "auditoria",
+    owner: "mkdir1997s-organization",
     version: "1.0.0",
     orientation: "portrait",
     userInterfaceStyle: "light",
@@ -22,7 +22,7 @@ export default {
     plugins: [],
     extra: {
       eas: {
-        projectId: "fb537f63-3779-4b02-b433-bd8fc79047f4"
+        projectId: "0938f308-633d-4b12-bea3-7508fefbf5a7"
       }
     }
   }
