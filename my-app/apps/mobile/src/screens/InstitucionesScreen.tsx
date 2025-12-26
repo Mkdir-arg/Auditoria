@@ -16,8 +16,7 @@ import axios from 'axios';
 import { Card } from '../components/Card';
 import { Button } from '../components/Button';
 import { colors, spacing, fontSize, borderRadius } from '../styles/theme';
-
-const API_URL = 'http://192.168.1.204:8000/api';
+import { API_URL } from '../config/api';
 
 export function InstitucionesScreen({ navigation, route }: any) {
   const [instituciones, setInstituciones] = useState<any[]>([]);

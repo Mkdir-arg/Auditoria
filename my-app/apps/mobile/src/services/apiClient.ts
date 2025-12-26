@@ -1,10 +1,9 @@
 import axios from 'axios'
 import { authStore } from '../store/authStore'
+import { API_URL } from '../config/api'
 
-// Para emulador Android: http://10.0.2.2:8000/api
-// Para celular físico: http://TU_IP_LOCAL:8000/api (ejemplo: http://192.168.1.100:8000/api)
 const apiClient = axios.create({
-  baseURL: 'http://192.168.1.204:8000/api',
+  baseURL: API_URL,
   timeout: 10000,
 })
 

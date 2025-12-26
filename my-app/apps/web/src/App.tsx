@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import axios from 'axios'
+import apiClient from './services/apiClient'
 import { Card } from './components/Card'
 import { Button } from './components/Button'
 
@@ -11,7 +11,7 @@ interface Item {
 }
 
 const fetchItems = async (): Promise<Item[]> => {
-  const { data } = await axios.get('/api/items/')
+  const { data } = await apiClient.get('/items/')
   return data.results || data
 }
 

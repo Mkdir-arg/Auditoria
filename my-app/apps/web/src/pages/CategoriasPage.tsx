@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Card } from '../components/ui/Card'
-import axios from 'axios'
+import apiClient from '../services/apiClient'
 
 interface Categoria {
   id: number
@@ -21,7 +21,7 @@ export function CategoriasPage() {
 
   const fetchCategorias = async () => {
     try {
-      const res = await axios.get('http://localhost:8000/api/nutricion/categorias/?limit=100')
+      const res = await apiClient.get('/nutricion/categorias/?limit=100')
       setCategorias(res.data.results || res.data)
     } catch (error) {
       console.error('Error cargando categorías:', error)
@@ -34,9 +34,9 @@ export function CategoriasPage() {
     e.preventDefault()
     try {
       if (editingId) {
-        await axios.put(`http://localhost:8000/api/nutricion/categorias/${editingId}/`, formData)
+        await apiClient.put(`/nutricion/categorias/${editingId}/`, formData)
       } else {
-        await axios.post('http://localhost:8000/api/nutricion/categorias/', formData)
+        await apiClient.post('/nutricion/categorias/', formData)
       }
       fetchCategorias()
       setShowForm(false)
@@ -56,7 +56,7 @@ export function CategoriasPage() {
   const handleDelete = async (id: number) => {
     if (confirm('¿Eliminar categoría?')) {
       try {
-        await axios.delete(`http://localhost:8000/api/nutricion/categorias/${id}/`)
+        await apiClient.delete(`/nutricion/categorias/${id}/`)
         fetchCategorias()
       } catch (error) {
         console.error('Error:', error)

@@ -1,0 +1,60 @@
+# Configuración de Digital Ocean App Platform
+# Copia este contenido en tu app.yaml o configura estas variables en el panel de Digital Ocean
+
+---
+# Este es un ejemplo de configuración para Digital Ocean App Platform
+# Sección de variables de entorno
+
+services:
+  - name: auditoria-app
+    github:
+      repo: your-repo/your-repo-name
+      branch: main
+    build_command: ""
+    run_command: ./entrypoint.sh
+    environment_slug: python
+    http_port: 8000
+    
+    # ===== VARIABLES DE ENTORNO =====
+    envs:
+      # Database URL para la BD Managed de Digital Ocean
+      - key: DATABASE_URL
+        scope: RUN_AND_BUILD_TIME
+        value: "mysql://doadmin:your_password@db-mysql-nyc3-35371-do-user-30778760-0.j.db.ondigitalocean.com:25060/defaultdb"
+      
+      # Django Secret Key (genera uno seguro)
+      # Puedes generar uno en Django con: python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())'
+      - key: DJANGO_SECRET_KEY
+        scope: RUN_AND_BUILD_TIME
+        value: "django-insecure-change-this-to-a-real-secret-key"
+      
+      # Modo debug (0 = False para producción)
+      - key: DJANGO_DEBUG
+        scope: RUN_AND_BUILD_TIME
+        value: "0"
+
+# Health Check
+health_check:
+  http_path: /api/
+  initial_delay_seconds: 30
+  period_seconds: 10
+  timeout_seconds: 5
+  success_threshold: 2
+  failure_threshold: 5
+
+# Resources
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 1000m
+    memory: 512Mi
+
+# Database connection (opcional si usas el Database Cluster managed)
+databases:
+  - name: audit_db
+    engine: MYSQL
+    version: "8"
+    production: false
+    size: db-s-1vcpu-1gb

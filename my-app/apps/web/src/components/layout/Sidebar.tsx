@@ -39,7 +39,7 @@ export function Sidebar({ isCollapsed, onToggle, onMobileClose }: SidebarProps) 
   }
 
   return (
-    <div className={`bg-gradient-to-b from-slate-800 to-slate-900 text-slate-100 h-full transition-all duration-300 shadow-xl ${isCollapsed ? 'w-20' : 'w-72'}`}>
+    <div className={`bg-gradient-to-b from-slate-800 to-slate-900 text-slate-100 min-h-screen overflow-y-auto transition-all duration-300 shadow-xl ${isCollapsed ? 'w-20' : 'w-72'}`}>
       {/* Header */}
       <div className="p-6 border-b border-slate-700">
         <div className="flex items-center justify-between">

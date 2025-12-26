@@ -16,6 +16,7 @@ import { FormularioRelevamientoPage } from '../pages/FormularioRelevamientoPage'
 import { InstitucionDetallePage } from '../pages/InstitucionDetallePage'
 import PlatosPlantillaPage from '../pages/PlatosPlantillaPage'
 import PlatoPlantillaDetallePage from '../pages/PlatoPlantillaDetallePage'
+import { SettingsPage } from '../pages/SettingsPage'
 
 export const router = createBrowserRouter([
   {
@@ -160,6 +161,16 @@ export const router = createBrowserRouter([
       <PrivateRoute>
         <Layout>
           <PlatoPlantillaDetallePage />
+        </Layout>
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: '/settings',
+    element: (
+      <PrivateRoute>
+        <Layout>
+          <SettingsPage />
         </Layout>
       </PrivateRoute>
     ),

@@ -10,10 +10,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from '@react-native-community/netinfo';
 import axios from 'axios';
 import { colors, spacing } from '../styles/theme';
+import { API_URL } from '../config/api';
 
-// Para EMULADOR Android: http://10.0.2.2:8000/api
-// Para CELULAR FÍSICO: http://192.168.1.204:8000/api
-const API_URL = 'http://192.168.1.204:8000/api';
 
 export function SyncButton() {
   const [pendingCount, setPendingCount] = useState(0);

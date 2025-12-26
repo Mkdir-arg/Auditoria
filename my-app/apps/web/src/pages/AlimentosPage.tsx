@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useDebounce } from 'use-debounce'
 import { Card } from '../components/ui/Card'
-import axios from 'axios'
+import apiClient from '../services/apiClient'
 
 interface Alimento {
   id: number
@@ -105,7 +105,7 @@ export function AlimentosPage() {
 
   const fetchAlimentos = async () => {
     try {
-      const res = await axios.get('http://localhost:8000/api/nutricion/alimentos/?limit=100')
+      const res = await apiClient.get('/nutricion/alimentos/?limit=100')
       setAlimentos(res.data.results || res.data)
     } catch (error) {
       console.error('Error cargando alimentos:', error)
@@ -116,7 +116,7 @@ export function AlimentosPage() {
 
   const fetchCategorias = async () => {
     try {
-      const res = await axios.get('http://localhost:8000/api/nutricion/categorias/?limit=100')
+      const res = await apiClient.get('/nutricion/categorias/?limit=100')
       setCategorias(res.data.results || res.data)
     } catch (error) {
       console.error('Error:', error)
@@ -143,9 +143,9 @@ export function AlimentosPage() {
         }
       })
       if (editingId) {
-        await axios.put(`http://localhost:8000/api/nutricion/alimentos/${editingId}/`, data)
+        await apiClient.put(`/nutricion/alimentos/${editingId}/`, data)
       } else {
-        await axios.post('http://localhost:8000/api/nutricion/alimentos/', data)
+        await apiClient.post('/nutricion/alimentos/', data)
       }
       fetchAlimentos()
       setShowForm(false)
@@ -160,7 +160,7 @@ export function AlimentosPage() {
   const handleEdit = async (alimento: Alimento) => {
     try {
       // Obtener el alimento completo con todos sus campos
-      const res = await axios.get(`http://localhost:8000/api/nutricion/alimentos/${alimento.id}/`)
+      const res = await apiClient.get(`/nutricion/alimentos/${alimento.id}/`)
       const alimentoCompleto = res.data
       
       const newFormData: any = {
@@ -191,7 +191,7 @@ export function AlimentosPage() {
   const handleDelete = async (id: number) => {
     if (confirm('¿Eliminar este alimento?')) {
       try {
-        await axios.delete(`http://localhost:8000/api/nutricion/alimentos/${id}/`)
+        await apiClient.delete(`/nutricion/alimentos/${id}/`)
         fetchAlimentos()
       } catch (error) {
         console.error('Error eliminando alimento:', error)

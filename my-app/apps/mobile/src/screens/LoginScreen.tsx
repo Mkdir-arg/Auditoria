@@ -14,8 +14,7 @@ import axios from 'axios';
 import { Input } from '../components/Input';
 import { Button } from '../components/Button';
 import { colors, spacing, fontSize, borderRadius } from '../styles/theme';
-
-const API_URL = 'http://192.168.1.204:8000/api';
+import { API_URL } from '../config/api';
 
 export function LoginScreen({ navigation }: any) {
   const [username, setUsername] = useState('');
