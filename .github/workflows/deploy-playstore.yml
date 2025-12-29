@@ -1,0 +1,111 @@
+name: Deploy Android to Play Store
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    defaults:
+      run:
+        shell: bash
+        working-directory: my-app/apps/mobile
+    env:
+      NODE_VERSION: "20.11.1"
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      ANDROID_PACKAGE_NAME: ${{ secrets.ANDROID_PACKAGE_NAME }}
+      PLAY_TRACK: ${{ secrets.PLAY_TRACK }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Detect package manager
+        id: pm
+        run: |
+          if [ -f pnpm-lock.yaml ]; then
+            echo "pm=pnpm" >> "$GITHUB_OUTPUT"
+            echo "cache_path=$GITHUB_WORKSPACE/my-app/apps/mobile/pnpm-lock.yaml" >> "$GITHUB_OUTPUT"
+          elif [ -f package-lock.json ]; then
+            echo "pm=npm" >> "$GITHUB_OUTPUT"
+            echo "cache_path=$GITHUB_WORKSPACE/my-app/apps/mobile/package-lock.json" >> "$GITHUB_OUTPUT"
+          else
+            echo "No lockfile found in my-app/apps/mobile" >&2
+            exit 1
+          fi
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: ${{ steps.pm.outputs.pm }}
+          cache-dependency-path: ${{ steps.pm.outputs.cache_path }}
+
+      - name: Enable Corepack (pnpm only)
+        if: steps.pm.outputs.pm == 'pnpm'
+        run: corepack enable
+
+      - name: Install dependencies
+        run: |
+          if [ "${{ steps.pm.outputs.pm }}" = "pnpm" ]; then
+            pnpm install --frozen-lockfile
+          else
+            npm ci --no-audit --fund=false
+          fi
+
+      - name: Install EAS CLI
+        run: npm install -g eas-cli
+
+      - name: Write Google Play service account JSON
+        env:
+          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+        run: |
+          mkdir -p .secrets
+          printf '%s' "$PLAY_SERVICE_ACCOUNT_JSON" > .secrets/play-service-account.json
+
+      - name: Validate Android package name
+        run: |
+          if [ -z "$ANDROID_PACKAGE_NAME" ]; then
+            echo "ANDROID_PACKAGE_NAME secret is required" >&2
+            exit 1
+          fi
+          node - <<'NODE'
+          const fs = require('fs');
+          const content = fs.readFileSync('app.config.js', 'utf8');
+          const match = content.match(/android:\s*{[\s\S]*?package:\s*["']([^"']+)["']/);
+          if (!match) {
+            console.error('android.package not found in app.config.js');
+            process.exit(1);
+          }
+          const expected = process.env.ANDROID_PACKAGE_NAME;
+          if (match[1] !== expected) {
+            console.error(`android.package mismatch: ${match[1]} !== ${expected}`);
+            process.exit(1);
+          }
+          NODE
+
+      - name: Configure EAS submit profile
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const path = require('path');
+          const easPath = path.join(process.cwd(), 'eas.json');
+          const eas = JSON.parse(fs.readFileSync(easPath, 'utf8'));
+          eas.submit = eas.submit || {};
+          eas.submit.production = eas.submit.production || {};
+          eas.submit.production.android = {
+            ...(eas.submit.production.android || {}),
+            serviceAccountKeyPath: './.secrets/play-service-account.json',
+            track: process.env.PLAY_TRACK || 'internal',
+          };
+          fs.writeFileSync(easPath, JSON.stringify(eas, null, 2));
+          NODE
+
+      - name: Build Android AAB
+        run: eas build -p android --profile production --non-interactive --wait
+
+      - name: Submit to Google Play
+        run: eas submit -p android --profile production --latest --non-interactive
